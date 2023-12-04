@@ -1,0 +1,9 @@
+{%- if section==1 -%}
+Is the relationship between {{xcol}} with the {{ycol}} strong?
+{%- endif -%}
+{%- if section==2 -%}
+What are the slopes of different segments?
+{%- endif -%}
+{%- if section==3 -%}
+Which section has the largest slope?
+{%- endif -%}

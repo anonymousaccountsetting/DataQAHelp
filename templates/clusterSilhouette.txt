@@ -1,0 +1,9 @@
+The Silhouette Score ranges from -1 to 1, and a higher score indicates better clustering,
+ the score of the model is {{Sscore}}, so
+{%- if Sscore >0.5%}
+ the model is considered to be a strong structure.
+{%- elif Sscore >0.25%}
+ the model is considered to be an acceptable structure.
+{%- else%}
+ the model is considered weak and the clustering may not be meaningful.
+{%- endif%}

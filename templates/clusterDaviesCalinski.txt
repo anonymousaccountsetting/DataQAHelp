@@ -1,0 +1,5 @@
+The Calinski Harabasz Score and Davies Bouldin Score help to understand whether the clustering effect is good enough.
+
+Calinski Harabasz Score of the model is {{CHscore}}, a higher score indicates better clustering.
+
+Davies Bouldin Score of the model is {{DBscore}}, a lower score indicates better clustering. The optimal number of clusters should have the lowest Davies-Bouldin score.

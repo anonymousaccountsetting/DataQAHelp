@@ -1,0 +1,1 @@
+From {{startPoint| round(3)}} to {{endPoint| round(3)}}, the segment slope is {{slope| round(3)}}.

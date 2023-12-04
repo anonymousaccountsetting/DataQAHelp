@@ -1,0 +1,3 @@
+The WSSS (within-cluster sum of squares) measures the sum of squared distances of samples to their closest cluster center. The lower the inertia, the better the model.
+Then the elbow point was found by calculating the ratios of consecutive differences in WCSS and finding the index of the minimum ratio.
+From the elbow point it suggests the optimal number of clusters is {{best_clusters}}. Please notice that the optimal number of clusters can be subjective and dependent on the specific problem and data being analyzed.
