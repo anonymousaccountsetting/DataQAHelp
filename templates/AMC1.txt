@@ -1,5 +1,3 @@
 {%-if n_select==1-%}
-All models were compared with {{sort}} as the primary measure{%-if exclude!=[]%} without considering{%- for i in range(0,excludeNum) %}{% if i!=excludeNum-1%} the {{exclude[i]}},{% else %} and the {{exclude[i]}}{%-endif-%}{%-endfor %}{%-endif-%}, the best fit model for this dataset was {{best}}.
-Details of the model are shown below:
-{{detail}}
+All models were compared with {{ 'R-square' if sort == 'r2' else sort }} as the primary measure, the best fit model for this dataset was {{best}}.
 {%-endif-%}

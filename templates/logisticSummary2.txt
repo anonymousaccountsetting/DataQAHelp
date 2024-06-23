@@ -1,0 +1,40 @@
+Overall, the accuracy of the {{modelName}} is {{accuracy | round(3)}}, which indicates that the model is 
+{%- if accuracy > 0.9 -%}
+excellent
+{%- elif accuracy > 0.8 -%}
+good
+{%- elif accuracy > 0.7 -%}
+acceptable
+{%- else -%}
+in need of improvement
+{%- endif -%}.
+
+According to the AUC value of {{auc | round(3)}}, the model 
+{%- if auc > 0.9 -%}
+has excellent discriminative ability.
+{%- elif auc > 0.8 -%}
+has good discriminative ability.
+{%- elif auc > 0.7 -%}
+has fair discriminative ability.
+{%- elif auc > 0.6 -%}
+has poor discriminative ability.
+{%- else -%}
+has failed to discriminate between classes.
+{%- endif -%}
+
+Based on the deviance divided by the degree of freedom, which is {{ddd | round(3)}}, the model 
+{%- if ddd < 2 and ddd >= 1 -%}
+could be considered a moderately good fit for the dataset.
+{%- elif ddd < 1 and ddd >= 0.5 -%}
+could be considered a very good fit for the dataset.
+{%- elif ddd < 0.5 -%}
+may be overfitting.
+{%- else -%}
+may be underfitting.
+{%- endif -%}
+
+
+
+{%- if qs[1]==1%} In all factors, {{ss}} have a significant impact on {{ycol}}, however, {{nss}} do not have a significant impact on {{ycol}}. {%- endif -%}
+{%- if qs[1]==1 and qs[2]==1 %} In addition, {% endif -%} {%- if qs[2]==1-%} {{pos}} will increase the chance of improving {{ycol}}, and {{neg}} will decrease this chance. {%- endif -%}
+{%- if qs[3]==1%} Last but not the least, {{imp}} is the most important factor that affects {{ycol}}.{%- endif -%}

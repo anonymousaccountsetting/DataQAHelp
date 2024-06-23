@@ -1,0 +1,15 @@
+The accuracy of the tuned {{modelname}} is {{accuracy | round(3)}},
+{%- if accuracy >= 0.9 %} indicating a high accuracy. The classifier's performance is excellent, and the predictions are very reliable.
+{%- elif accuracy >= 0.7 and accuracy < 0.9 %} indicating a medium accuracy. The classifier's performance is good, and the predictions are fairly reliable.
+{%- elif accuracy >= 0.5 and accuracy < 0.7 %} indicating a low accuracy. The classifier's performance is average, and the predictions are not very reliable.
+{%- else %} indicating a very low accuracy. The classifier's performance is poor, and the predictions are unreliable.
+{%- endif %}
+
+Additionally, the AUC of the tuned model is {{auc | round(3)}},
+{%- if auc >= 0.9 %} which indicates excellent discriminatory ability. The classifier's predictions are very reliable.
+{%- elif auc >= 0.8 and auc < 0.9 %} which indicates good discriminatory ability. The classifier's predictions are fairly reliable.
+{%- elif auc >= 0.7 and auc < 0.8 %} which indicates fair discriminatory ability. The classifier's predictions are somewhat reliable.
+{%- else %} which indicates poor discriminatory ability. The classifier's predictions are unreliable.
+{%- endif %}
+
+The table below shows information about the results of fitting each untuned model.

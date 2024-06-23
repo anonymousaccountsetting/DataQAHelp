@@ -1,0 +1,2 @@
+In {{Xend}}, there were an estimated {{yend}} {{ycol}} - {%-if diff>0%} an increase of {{diff}} ({{percentagechange| round(0)}}%) from {{Xlast}}.{%-elif diff<0%} a decrease of -{{diff}} (-{{percentagechange| round(0)}}%) from {{Xlast}}.{%-else%} it did not change from {{Xlast}}. {%-endif-%}
+{%- if yend < ymax %} It is also less than the peak of {{ymax}} in {{Xmax}}.{%-endif-%}

@@ -1,0 +1,8 @@
+Over the past 5 years, there has been{%- if change_percentage < -50 %} a significant decrease ({{ change_percentage|abs|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
+{%- elif change_percentage < -10 %}  a decrease ({{ change_percentage|abs|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
+{%- elif change_percentage > 50 %} a significant increase ({{ change_percentage|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
+{%- elif change_percentage > 10 %} an increase ({{ change_percentage|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
+{%- else %} almost no change ({{ change_percentage|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
+{%- endif %} Across the same period,{%- if shirechange_percentage < -10 %} there was a decrease of {{shirechange_percentage|abs|round(0)}}% in Aberdeenshire
+{%- elif change_percentage > 10 %} there was an increase of {{shirechange_percentage|round(0)}}% in Aberdeenshire
+{%- else %} there has been no noticeable variation in the number of enquiries in Aberdeenshire{%- endif %} while in Moray{%- if Moraychange_percentage < -10 %} there was a decrease of {{Moraychange_percentage|abs|round(0)}}%.{%- elif Moraychange_percentage > 10 %} there was an increase of {{Moraychange_percentage|round(0)}}%. {%- else %} there has been no noticeable variation in the number of enquiries in Moray.{%- endif %} 

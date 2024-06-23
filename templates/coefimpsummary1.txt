@@ -1,0 +1,2 @@
+The figure below is a scatter plot of the independent variable versus the dependent variable.
+In the {{modelname}}, the average of the absolute values of all coefficients for this independent variable is {{coef | round(2) }}. {%- if max_value == coef %} Notably, this is the independent variable with the greatest impact on the classification result.{%- endif %}

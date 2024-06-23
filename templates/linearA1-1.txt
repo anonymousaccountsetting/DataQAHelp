@@ -1,0 +1,9 @@
+{% if r2 < 0.3 -%}
+The relationship between the variables is very weak. The analysis is not reliable.
+{% elif r2 < 0.5 and r2 >= 0.3 -%}
+The relationship between the variables is weak. Be cautious when using this analysis.
+{% elif r2 < 0.7 and r2 >= 0.5 -%}
+The relationship between the variables is moderate. The analysis is somewhat reliable.
+{% else -%}
+The relationship between the variables is strong. You can trust this analysis.
+{%- endif%}

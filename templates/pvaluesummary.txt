@@ -1,0 +1,11 @@
+The figure below is a scatter plot of the independent variable versus the dependent variable.
+
+
+{% if p_value < 0.05 %}
+The p-value for the independent variable is {{ p_value | round(2) }}. This indicates a statistically significant relationship between the independent variable and the dependent variable.
+{% else %}
+The p-value for the independent variable is {{ p_value | round(2)}}. This indicates no statistically significant relationship between the independent variable and the dependent variable.
+{% endif %}
+
+
+Note that p-values tend to make sense for models like Lasso Least Angle Regression, Ridge Regression, Bayesian Ridge, Least Angle Regression, Lasso Regression, Linear Regression, Huber Regressor, Orthogonal Matching Pursuit, Passive Aggressive Regressor, and Elastic Net models, but not for models like Gradient Boosting Regressor, Random Forest Regressor, CatBoost Regressor, Light Gradient Boosting Machine, Extra Trees Regressor, AdaBoost Regressor, Extreme Gradient Boosting, Decision Tree Regressor, K Neighbors Regressor, and Dummy Regressor because their mechanism does not involve significance testing for each independent variable.

@@ -1,0 +1,10 @@
+Overall, the accuracy of the {{modelName}} is {{accuracy | round(3)}}, which indicates that the model is
+{%- if accuracy > 0.9 %} excellent
+{%- elif accuracy > 0.8 %} good
+{%- elif accuracy > 0.7 %} acceptable
+{%- else %} in need of improvement{%- endif %}. 
+{%- if pos and neg %} In addition, {{pos}} will increase the chance of having the positive class, and {{neg}} will decrease this chance.
+{%- elif pos %} In addition, {{pos}} will increase the chance of having the positive class.
+{%- elif neg %} In addition, {{neg}} will decrease the chance of having the positive class.
+{%- else %} No specific factors were found to impact the chance of having the positive class.
+{%- endif %} Without considering other conditions, {{imp}} is the most influential variable on the classification result.

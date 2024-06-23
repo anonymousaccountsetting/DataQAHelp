@@ -1,0 +1,21 @@
+The accuracy for the {{modelName}} is {{accuracy | round(3)}}.
+{%- if accuracy > 0.9 %} The accuracy is greater than 90%, indicating that the model has excellent performance on the dataset.
+{%- elif accuracy > 0.8 %} The accuracy is between 80% and 90%, indicating that the model has good performance on the dataset.
+{%- elif accuracy > 0.7 %} The accuracy is between 70% and 80%, indicating that the model has acceptable performance on the dataset.
+{%- else %} The accuracy is less than 70%, suggesting that the model may need improvement.
+{%- endif %}
+
+Additionally, the Area Under the Curve (AUC), which measures the model's ability to distinguish between positive and negative classes, is {{auc | round(3)}}.
+{%- if auc > 0.9 %} The AUC is greater than 0.9, indicating that the model has excellent discriminative ability.
+{%- elif auc > 0.8 %} The AUC is between 0.8 and 0.9, indicating that the model has good discriminative ability.
+{%- elif auc > 0.7 %} The AUC is between 0.7 and 0.8, indicating that the model has fair discriminative ability.
+{%- elif auc > 0.6 %} The AUC is between 0.6 and 0.7, indicating that the model has poor discriminative ability.
+{%- else %} The AUC is less than 0.6, suggesting that the model has failed to discriminate between classes.
+{%- endif %}
+
+Also, the value of deviance divided by the degree of freedom, which assesses the goodness-of-fit of a logistic regression model, is {{ddd | round(3)}}.
+{%- if ddd < 2 and ddd >= 1 %} The value of deviance divided by the degree of freedom is less than 2, so the model could be considered a moderately good fit for the dataset.
+{%- elif ddd < 1 and ddd >= 0.5 %} The value of deviance divided by the degree of freedom is less than 1, so the model could be considered a very good fit for the dataset.
+{%- elif ddd < 0.5 %} The value of deviance divided by the degree of freedom is less than 0.5, so the model may be overfitting.
+{%- else %} The value of deviance divided by the degree of freedom is greater than 2, so the model may be underfitting.
+{%- endif -%}

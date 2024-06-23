@@ -1,3 +1,4 @@
+import pandas as pd
 import DataScienceComponents as DC
 import NLGComponents as NC
 
@@ -12,19 +13,19 @@ class general_datastory_pipeline:
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
         if skmodel==1:
-            linearData,r2=DC.ModelFitting().LinearSKDefaultModel(data, Xcol, ycol)
+            linearData,r2,mape,mse,rmse,mae,vif=DC.ModelFitting().LinearSKDefaultModel(data, Xcol, ycol)
         elif skmodel==0:
-            model = DC.ModelFitting().LinearDefaultModel(data, Xcol, ycol)
+            model,mape,mse,rmse,mae,vif = DC.ModelFitting().LinearDefaultModel(data, Xcol, ycol)
             columns = {'coeff': model.params.values[1:], 'pvalue': model.pvalues.round(4).values[1:]}
             linearData = pd.DataFrame(data=columns, index=Xcol)
             r2 = model.rsquared
-        NC.DocumentplanningandDashboard().LinearModelStats_view( linearData,r2,data, Xcol, ycol, questionset, expect,portnum)
+        NC.DocumentplanningandDashboard().LinearModelStats_view( linearData,r2,mape,mse,rmse,mae,vif,data, Xcol, ycol, questionset, expect,portnum)
 
-    def LogisticFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1, 1],portnum=8050):
+    def LogisticFit(self,data, Xcol, ycol, Xnewname="", ynewname="",pos_class_mean='', questionset=[1, 1, 1, 1],portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        model, devDdf = DC.ModelFitting().LogisticrDefaultModel(data, Xcol, ycol)
-        NC.DocumentplanningandDashboard().LogisticModelStats_view(model,data, Xcol, ycol, devDdf, questionset,portnum)
+        model, devDdf,accuracy,auc = DC.ModelFitting().LogisticrDefaultModel(data, Xcol, ycol)
+        NC.DocumentplanningandDashboard().LogisticModelStats_view(model,data, Xcol, ycol, devDdf,accuracy,auc, pos_class_mean,questionset,portnum)
 
     def GradientBoostingFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1],
                                    gbr_params={'n_estimators': 500, 'max_depth': 3, 'min_samples_split': 5,
@@ -38,8 +39,8 @@ class general_datastory_pipeline:
     def piecewiselinearFit(self,data, Xcol, ycol, num_breaks,Xnewname="", ynewname="",portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        my_pwlf, slopes, segment_points, segment_values, max_slope_segment=DC.ModelFitting().piecewise_linear_fit(data, Xcol, ycol, num_breaks)
-        NC.DocumentplanningandDashboard().piecewise_linear_view(data, Xcol, ycol,my_pwlf, slopes, segment_points, segment_values, max_slope_segment,portnum)
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks=DC.ModelFitting().piecewise_linear_fit(data, Xcol, ycol, num_breaks)
+        NC.DocumentplanningandDashboard().piecewise_linear_view(data, Xcol, ycol,my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,portnum)
 
     def RidgeClassifierFit(self,data,Xcol,ycol,class1,class2,Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
@@ -56,20 +57,151 @@ class general_datastory_pipeline:
             data, Xcol, ycol =  NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
         accuracy,precision,recall,f1,confusionmatrix,cv_scores = DC.ModelFitting().SVCClassifierModel(data, Xcol, ycol,kernel=kernel, C=C,cvnum=cvnum)
         NC.DocumentplanningandDashboard().SVCClassifier_view(data,Xcol,ycol,accuracy,precision,recall,f1,confusionmatrix,cv_scores)
-    def RandomForestFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], n_estimators=10,
-                               max_depth=3,portnum=8050):
+
+class casestudy_datastory_pipeline:
+    def CPpiecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        X = data[Xcol].values
-        y = data[ycol]
-        tree_small, rf_small, DTData, r2, mse, rmse = DC.ModelFitting().RandomForestDefaultModel(X, y, Xcol, n_estimators, max_depth)
-        NC.DocumentplanningandDashboard().RandomForestModelStats_view(data, Xcol, ycol, tree_small, rf_small, DTData, r2, mse, questionset,portnum)
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks = DC.ModelFitting().piecewise_linear_fit(
+            data, Xcol, ycol, num_breaks)
+        last_X,last_X2,last_y,difference,percentage_change,max_value,max_y_X=DC.DataDescription().general_description(data, Xcol, ycol)
+        summary=NC.DocumentplanningNoDashboard().CP_general_description(ycol,last_X,last_X2,last_y,difference,percentage_change,max_value,max_y_X)
+        summary=summary+' '+NC.DocumentplanningNoDashboard().CP_piecewise_linear(data, Xcol, ycol, slopes, breaks)
+        print(summary)
 
-    def DecisionTreeFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], max_depth=3,portnum=8050):
+    def DRDpiecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        X = data[Xcol].values
-        y = data[ycol]
-        DTmodel, r2, mse, rmse, DTData = DC.ModelFitting().DecisionTreeDefaultModel(X, y, Xcol, max_depth)
-        NC.DocumentplanningandDashboard().DecisionTreeModelStats_view(data, Xcol, ycol, DTData, DTmodel, r2, mse, questionset,portnum)
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks = DC.ModelFitting().piecewise_linear_fit(
+            data, Xcol, ycol, num_breaks)
+        summary=NC.DocumentplanningNoDashboard().DRD_piecewise_linear(data, Xcol, ycol,my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks)
+        print(summary)
 
+class find_best_mode_pipeline:
+
+    def pycaret_model_fit(self,dataset,types,pycaretname,comparestory,comapre_results,target,modelname):
+        if types==0:
+            independent_var, imp, Accuracy, AUC, imp_figure, Error_figure,importance = DC.FindBestModel().pycaret_create_model(types, pycaretname)
+            fitstory = NC.AutoFindBestModel().pycaret_classificationmodel_summary_view(imp, Accuracy, AUC,target,modelname)
+            # app_name, listTabs = NC.start_app()
+            # NC.dash_with_table(app_name, listTabs, comparestory, dataset, "Model Compare Overview")
+            # _base64 = []
+            # _base64 = NC.read_figure(_base64, "Prediction Error")
+            # _base64 = NC.read_figure(_base64, "Feature Importance")
+            # _base64 = NC.read_figure(_base64, "SHAP summary")
+            # NC.dash_with_table(app_name, listTabs, fitstory, comapre_results, "Model credibility")
+            # # VW.dash_with_figure(app_name, listTabs, impstory, 'Variables Summary', _base64[1])
+            # NC.dash_with_two_figure(app_name, listTabs, impstory, 'Important Variables Summary', _base64[1],_base64[2])
+            # NC.run_app(app_name, listTabs)
+            return (fitstory,importance)
+        elif types==1:
+            independent_var, imp,r2, mape, imp_figure, Error_figure = DC.FindBestModel().pycaret_create_model(types, pycaretname)
+            fitstory= NC.AutoFindBestModel().pycaret_model_summary_view(imp, r2, mape,target,modelname)
+            # app_name, listTabs = NC.start_app()
+            # NC.dash_with_table(app_name, listTabs, comparestory, dataset, "Model Compare Overview")
+            # _base64 = []
+            # _base64 = NC.read_figure(_base64, "Prediction Error")
+            # _base64 = NC.read_figure(_base64, "Feature Importance")
+            # _base64 = NC.read_figure(_base64, "SHAP summary")
+            # NC.dash_with_table(app_name, listTabs, fitstory, comapre_results, "Model credibility")
+            # # VW.dash_with_figure(app_name, listTabs, impstory, 'Variables Summary', _base64[1])
+            # NC.dash_with_two_figure(app_name, listTabs, impstory, 'Important Variables Summary', _base64[1],_base64[2])
+            # NC.run_app(app_name, listTabs)
+            return (fitstory)
+    def FindBestRegressionPipeline(self,data,Xcol,ycol,selected_criterion="r2",Xnewname="", ynewname="",exclude=['rf','gbr','catboost','lightgbm','et','ada','xgboost','llar','lar','huber','dt','omp','par','en','knn','dummy']):
+        if Xnewname != "" or ynewname != "":
+            data, Xcol, ycol =  NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
+        X = data[Xcol]
+        y = data[ycol]
+
+        modelname, modeldetail, selected_criterion,comapre_results,pycaretname=DC.FindBestModel().find_best_regression(X,y,ycol,selected_criterion,Xcol,exclude)
+        modelcomparestory=NC.AutoFindBestModel().model_compare(modelname, modeldetail, selected_criterion,1)
+        fitstory=find_best_mode_pipeline.pycaret_model_fit(self,data,1, pycaretname, modelcomparestory, comapre_results,ycol,modelname)
+        p_values_df=DC.ModelFitting().PValueCalculation(data,Xcol,ycol)
+        NC.DocumentplanningandDashboard().FindBestRegression_view(data,Xcol,ycol,comapre_results,fitstory,modelcomparestory,p_values_df)
+
+    def FindBestClassifierPipeline(self,data,Xcol,ycol,selected_criterion="Accuracy",Xnewname="", ynewname="",exclude = ['rf','dt','qda','knn','lightgbm','et','catboost','xgboost','gbc','ada','nb','dummy']):
+        if Xnewname != "" or ynewname != "":
+            data, Xcol, ycol =  NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
+        X = data[Xcol]
+        y = data[ycol]
+
+        modelname, modeldetail, selected_criterion,comapre_results,pycaretname=DC.FindBestModel().find_best_classifier(X,y,ycol,selected_criterion,Xcol,exclude)
+        modelcomparestory=NC.AutoFindBestModel().model_compare(modelname, modeldetail, selected_criterion,1)
+        fitstory,importance = find_best_mode_pipeline.pycaret_model_fit(self, data, 0, pycaretname, modelcomparestory,
+                                                             comapre_results, ycol, modelname)
+        print(fitstory)
+        NC.DocumentplanningandDashboard().FindBestClassifier_view(data, Xcol, ycol, comapre_results, fitstory,
+                                                                  modelcomparestory,importance,pycaretname,modelname)
+
+
+class special_pipelines_for_ACCCP:
+    def register_question1(self,app_name, listTabs, register_dataset, per1000inCity_col, per1000nation_col,
+                           table_col=['Period', 'Registrations In Aberdeen City',
+                                      'Registrations per 1000 population in Aberdeen City',
+                                      'Compared with last year for Aberdeen City'],
+                           label='What are the emerging trends or themes emerging from local and comparators data?'):
+        diff = DC.DataDescription().loop_mean_compare(register_dataset, per1000inCity_col, per1000nation_col)
+        app,listTabs,text=NC.special_view_for_ACCCP().register_question1_view(register_dataset, per1000inCity_col, diff, table_col, label, app_name, listTabs)
+        return (app,listTabs,text)
+
+    def riskfactor_question1(self,app_name, listTabs, risk_factor_dataset, risk_factor_col, cityname="Aberdeen City",
+                             max_num=5,
+                             label='What are the emerging trends or themes emerging from local single agency data?'):
+        row = 0
+        max_factor = DC.DataDescription().find_row_n_max(risk_factor_dataset, risk_factor_col, row, max_num)
+        row = 1
+        max_factor_lastyear = DC.DataDescription().find_row_n_max(risk_factor_dataset, risk_factor_col, row, max_num)
+        same_factor = DC.DataDescription().detect_same_elements(max_factor, max_factor_lastyear)
+        app,listTabs,text=NC.special_view_for_ACCCP().riskfactor_question1_view(risk_factor_dataset, max_factor, same_factor, label, cityname, app_name, listTabs)
+        return (app,listTabs,text)
+
+    def re_register_question4(self,app_name, listTabs, register_dataset, reregister_col, period_col='Period',
+                              national_average_reregistration='13 - 16%',
+                              table_col=['Period', 'Re-Registrations In Aberdeen City',
+                                         'Re-registrations as a % of registrations in Aberdeen City',
+                                         'Largest family for Aberdeen City',
+                                         'Longest gap between registrations of Aberdeen City',
+                                         'Shortest gap between registrations of Aberdeen City'],
+                              label='To what extent is Aberdeen City consistent with the national and comparator averages for re-registration?  Can the CPC be assured that deregistered children receive at least 3 months’ post registration multi-agency support?'):
+        reregister_lastyear, period = DC.DataDescription().select_one_element(register_dataset, reregister_col, period_col)
+        app,listTabs,text=NC.special_view_for_ACCCP().re_register_question4_view(register_dataset, national_average_reregistration, reregister_lastyear, period,
+                                      table_col, label, app_name, listTabs)
+        return (app,listTabs,text)
+
+    def remain_time_question5(self,app_name, listTabs, remain_data, check_col, period_col='Period',
+                              label='What is the number of children remaining on the CPR for more than 1 year and can the CPC be assured that it is necessary for any child to remain on the CPR for more than 1 year?'):
+        zero_lastdata = DC.DataDescription().find_all_zero_after_arow(remain_data, check_col, period_col)
+        app,listTabs,text=NC.special_view_for_ACCCP().remain_time_question5_view(remain_data, zero_lastdata, label, app_name, listTabs)
+        return (app,listTabs,text)
+
+    def enquiries_question6(self,app_name, listTabs, enquiries_data, AC_enquiries, AS_enquiries, MT_enquiries,
+                            period_col='Period',
+                            label='To what extent do agencies make use of the CPR?  If they are not utilising it, what are the reasons for that?'):
+        period = enquiries_data[period_col]
+        ACdata = enquiries_data[AC_enquiries].values
+        ASdata = enquiries_data[AS_enquiries].values
+        MTdata = enquiries_data[MT_enquiries].values
+        ACmean = DC.DataDescription().find_column_mean(ACdata)
+        ASmean = DC.DataDescription().find_column_mean(ASdata)
+        MTmean = DC.DataDescription().find_column_mean(MTdata)
+        app,listTabs,text=NC.special_view_for_ACCCP().enquiries_question6_view(ACmean, ASmean, MTmean, ACdata, ASdata, MTdata, period, label, app_name, listTabs)
+        return (app,listTabs,text)
+
+    def ACCCP_questions(self,register_dataset,risk_factor_dataset,remain_data,enquiries_data,per1000inCity_col,per1000nation_col,risk_factor_col,reregister_col,check_col,period_col,AC_enquiries,AS_enquiries,MT_enquiries,template_path,output_path='./output.docx'):
+        app_name, listTabs=NC.start_app()
+        app, listTabs,story1=special_pipelines_for_ACCCP.register_question1(self,app_name, listTabs, register_dataset, per1000inCity_col, per1000nation_col)
+        app, listTabs,story2=special_pipelines_for_ACCCP.riskfactor_question1(self,app_name, listTabs, risk_factor_dataset, risk_factor_col)
+        app, listTabs,story3=special_pipelines_for_ACCCP.re_register_question4(self,app_name, listTabs, register_dataset, reregister_col)
+        app, listTabs,story4=special_pipelines_for_ACCCP.remain_time_question5(self,app_name, listTabs, remain_data, check_col,period_col)
+        app, listTabs,story5=special_pipelines_for_ACCCP.enquiries_question6(self,app_name, listTabs, enquiries_data, AC_enquiries, AS_enquiries, MT_enquiries,period_col)
+        replacements = {
+            "{{story1}}": story1,
+            "{{story2}}": story2,
+            "{{story3}}": story3,
+            "{{story4}}": story4,
+            "{{story5}}": story5
+        }
+        NC.fill_template(template_path, output_path, replacements)
+        app,listTabs=NC.special_view_for_ACCCP().unfinished_report(app_name, listTabs,story1,story2,story3,story4,story5,template_path)
+        NC.run_app(app_name, listTabs)

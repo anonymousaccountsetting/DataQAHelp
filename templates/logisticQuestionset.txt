@@ -7,18 +7,13 @@ Data Stories Overview
 {%- endif -%}
 {%- if section==2 -%}
 {%- if qs[2]==1 and qs[1]==0 -%}
-Question: How does the {{xcol}} affect the probability of {{ycol}}?
+Question: How does the {{xcol}} affect the likelihood of the positive class?
 {%- elif qs[1]==1 and qs[2]==0 -%}
-Question: Does the {{xcol}} have a significant effect on the {{ycol}}?
+Question: Are the results statistically significant?
 {%- elif qs[1]==1 and qs[2]==1 -%}
-Question: How does the {{xcol}} affect the probability of {{ycol}}? And does the {{xcol}} have a significant effect on the {{ycol}}?
+Question: How does the {{xcol}} affect the likelihood of the positive class? And are the results statistically significant?
 {%- endif -%}
 {%- endif -%}
 {%- if section==3 -%}
-Question:
-{%- if qs[1]==1 %} Which independent variables have a significant effect on the {{ycol}}, and which do not? {%- endif -%}
-{%- if qs[2]==1 %} Which independent variables have a positive effect on the {{ycol}}?
-{%- elif qs[2]==1 and trend==0 %} Which independent variables have a negative effect on the {{ycol}}? {%- endif -%}
-{%- if qs[3]==1 %} Which independent variable is the most important to the {{ycol}}? {%- endif -%}
-{%- if qs[1]==0 and qs[2]==0 and qs[3]==0 %} Data Stories Summary {%- endif -%}
+Summary of Previous Questions.
 {%- endif -%}

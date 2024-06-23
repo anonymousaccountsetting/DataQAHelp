@@ -7,3 +7,6 @@ What are the slopes of different segments?
 {%- if section==3 -%}
 Which section has the largest slope?
 {%- endif -%}
+{%- if section==4 -%}
+As the {{xcol}} changes, what happens to the {{ycol}}?
+{%- endif -%}

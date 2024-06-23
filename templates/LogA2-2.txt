@@ -1,0 +1,12 @@
+{%- if pos_class_mean !='' -%}
+A positive class means that {{pos_class_mean}}. {%- endif -%}
+{%- if coeff > 0 %} The coefficient for {{xcol}} is positive, which means when other independent variables are fixed, as {{xcol}} increases, the likelihood of the positive class increases.
+{%- elif coeff < 0 %} The coefficient for {{xcol}} is negative, which means when other independent variables are fixed, as {{xcol}} increases, the likelihood of the positive class decreases.
+{%- else %} The coefficient for {{xcol}} is 0, which means that {{xcol}} has no impact on the classification results.
+{%- endif -%}
+
+{%- if coeff != 0 %} In particular, the coefficient for {{xcol}} is {{coeff | round(3)}},
+{%- if coeff > 0 %} which means that the group with (a) high {{xcol}} has {{odd | round(3)}}% more odds of having the positive class under the premise that other variables are fixed.
+{%- else %} which means that the group with (a) high {{xcol}} has {{odd | round(3)}}% fewer odds of having the positive class under the premise that other variables are fixed.
+{%- endif -%}
+{%- endif -%}

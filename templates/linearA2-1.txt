@@ -1,0 +1,3 @@
+As depicted in the figure above, when keeping other variables fixed,{%- if (coeff) | round(3)>0%} a one-unit increase in the {{xcol}} results in an increase of {{coeff | round(3)}} in the mean value of the {{ycol}}.
+{%- elif (coeff) | round(3)<0 %} a one-unit increase in the {{xcol}} results in a decrease of {{(-coeff) | round(3)}} in the mean value of the {{ycol}}.
+{%- elif (coeff) | round(3)==0 %} a one-unit increase in the {{xcol}} will almost not affect the {{ycol}}. {%- endif-%}

@@ -1,0 +1,2 @@
+The figure below is a scatter plot of the independent variable versus the dependent variable.
+In the {{modelname}}, the importance score of this independent variable is {{imp | round(2) }}. {%- if max_value == imp %} Notably, this is the independent variable with the greatest impact on the classification result.{%- endif %}
