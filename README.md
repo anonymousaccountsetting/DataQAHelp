@@ -11,7 +11,7 @@ In summary, the main goal of this framework is to facilitate a quick start in de
 
 Here is an example of a simple application based on the DataQAHelper in action.
 
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/master/readmepic/demo.gif?raw=true"
+<img src="https://github.com/tangjikededela/DataQAHelp/blob/master/readmepic/demo.gif"
      alt="DataQAHelper Application Demo"
      style="width:1920px" />
 
