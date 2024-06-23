@@ -23,8 +23,7 @@ Here is an example of a simple application based on the DataQAHelper in action.
 
 ## Requirement
 ### The following packages are required to run the prototype:
-```[IntegratedPipelines.py](..%2FPycharmProjects%2FDataQAHelp%2FIntegratedPipelines.py)
-[NLGComponents.py](..%2FPycharmProjects%2FDataQAHelp%2FNLGComponents.py)
+```
 numpy==1.23.5
 seaborn==0.12.2
 pandas==1.5.3
