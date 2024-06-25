@@ -15,7 +15,8 @@ Here is an example of a simple application based on the DataQAHelper in action.
      alt="DataQAHelper Application Demo"
      style="width:1920px" />
 
-Check out [this Colab note]([https://github.com](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb)) with examples of how DataQAHelper can be used with different datasets and analyses.
+Check out [this Colab note](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb) with examples of how DataQAHelper can be used with different datasets and analyses.
+
 
 ## System Requirements 
 
