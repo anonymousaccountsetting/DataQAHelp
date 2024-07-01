@@ -1,11 +1,11 @@
 {%- if section==1 -%}
-Is the relationship between {{xcol}} with the {{ycol}} strong?
+Is the relationship between {{xcol}} and the {{ycol}} strong?
 {%- endif -%}
 {%- if section==2 -%}
 What are the slopes of different segments?
 {%- endif -%}
 {%- if section==3 -%}
-Which section has the largest slope?
+Which segment has the largest slope?
 {%- endif -%}
 {%- if section==4 -%}
 As the {{xcol}} changes, what happens to the {{ycol}}?

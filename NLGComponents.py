@@ -108,12 +108,14 @@ segmented_GD1 = env.get_template('drugreport1')
 segmented_GC1 = env.get_template('childreport1')
 
 # For Aberdeen City CP
-national_data_compare_story=env.get_template('national_data.txt')
+national_data_compare_story = env.get_template('national_data.txt')
 register_story = env.get_template('register.txt')
 risk_factor_story = env.get_template('risk_factor.txt')
 reregister_story = env.get_template('reregister.txt')
 remain_story = env.get_template('remain_story.txt')
 enquiries_story = env.get_template('enquiries_story.txt')
+timescales_story = env.get_template('CPtimescales.txt')
+SCRA_story=env.get_template('SCRAdata.txt')
 
 # For different dependent variables compared DRD
 dc1 = env.get_template('dependentmagnificationcompare')
@@ -171,19 +173,29 @@ def replace_placeholder(paragraph, placeholder, replacement_text):
     for run in paragraph.runs:
         replace_placeholder_in_run(run, placeholder, replacement_text)
 
-def fill_template(doc_path, output_path, replacements):
+def replace_placeholder_with_color(paragraph, placeholder, replacement_text, color):
+    if placeholder in paragraph.text:
+        inline = paragraph.runs
+        for i in range(len(inline)):
+            if placeholder in inline[i].text:
+                text = inline[i].text.replace(placeholder, replacement_text)
+                inline[i].text = text
+                inline[i].font.color.rgb = color
+                print(f"Replaced {placeholder} with {replacement_text} in paragraph.")
+
+def fill_template(doc_path, output_path, replacements, color):
     doc = Document(doc_path)
 
     for para in doc.paragraphs:
         for placeholder, replacement_text in replacements.items():
-            replace_placeholder(para, placeholder, replacement_text)
+            replace_placeholder_with_color(para, placeholder, replacement_text, color)
 
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for para in cell.paragraphs:
                     for placeholder, replacement_text in replacements.items():
-                        replace_placeholder(para, placeholder, replacement_text)
+                        replace_placeholder_with_color(para, placeholder, replacement_text, color)
 
     doc.save(output_path)
 
@@ -1109,12 +1121,84 @@ class special_view_for_ACCCP:
         dash_tab_add(listTabs, "question6", children)
         return (app, listTabs,enquiriesstory)
 
-    def national_data_view(self,change_percentage,initial_year_value,final_year_value,shirechange_percentage,Moraychange_percentage):
-        nationalstory=national_data_compare_story.render(change_percentage=change_percentage,initial_year_value=initial_year_value,final_year_value=final_year_value,shirechange_percentage=shirechange_percentage,Moraychange_percentage=Moraychange_percentage)
+    def national_data_view(self, change_percentage, initial_year_value, final_year_value, shirechange_percentage,
+                           Moraychange_percentage, IPchange_percentage):
+        nationalstory = national_data_compare_story.render(change_percentage=change_percentage,
+                                                           initial_year_value=initial_year_value,
+                                                           final_year_value=final_year_value,
+                                                           shirechange_percentage=shirechange_percentage,
+                                                           Moraychange_percentage=Moraychange_percentage,
+                                                           IPchange_percentage=IPchange_percentage)
         children = [html.P(nationalstory)]
-        print(nationalstory)
+        return (nationalstory)
         # dash_tab_add(listTabs, "question1-1", children)
         # return (app, listTabs,enquiriesstory)
+
+    def timescales_description(self, df, colname1, colname2, colname3, colname4, colname5, colname6, colname7,
+                               colname8, colname9, colname10, colname11, colname12, colname13,
+                               colname14, colname15, colname16, colname17, colname18, colname19,
+                               colname20, colname21, colname22, colname23, colname24):
+        casenumber1 = df[colname1][0]
+        casenumber2 = df[colname2][0]
+        casenumber3 = df[colname3][0]
+        percentage3 = round(casenumber3 / (casenumber3 + df[colname24][0]) * 100)
+        percentage3_2 = df[colname21][0]
+        percentage4_jun = df[colname4][0]
+        percentage4_sep = df[colname5][0]
+        percentage4_dec = df[colname6][0]
+
+        casenumber5 = df[colname7][0]
+        percentage5 = round(casenumber5 / (casenumber5 + df[colname8][0]) * 100)
+
+        casenumber6_1 = df[colname22][0]
+        casenumber6_2 = df[colname23][0]
+        percentage6 = round(casenumber6_1 / (casenumber6_1 + casenumber6_2) * 100)
+
+        casenumber7 = df[colname9][0]
+        percentage7 = round(casenumber7 / (casenumber7 + df[colname10][0]) * 100)
+
+        casenumber8 = df[colname11][0]
+        percentage8 = round(casenumber8 / (casenumber8 + df[colname12][0]) * 100)
+
+        casenumber9 = df[colname13][0]
+        percentage9 = round(casenumber9 / (casenumber9 + df[colname14][0]) * 100)
+
+        casenumber10 = df[colname15][0]
+        percentage10 = round(casenumber10 / (casenumber10 + df[colname16][0]) * 100)
+
+        casenumber11 = df[colname17][0]
+        percentage11 = round(casenumber11 / (casenumber11 + df[colname18][0]) * 100)
+
+        casenumber12 = df[colname18][0]
+
+        casenumber13 = df[colname19][0]
+        percentage13 = round(casenumber13 / (casenumber13 + df[colname20][0]) * 100)
+
+        casenumber14 = df[colname20][0]
+        timescalesstory = timescales_story.render(colname1=colname1, casenumber1=casenumber1,
+                                                  colname2=colname2, casenumber2=casenumber2,
+                                                  colname3=colname3, casenumber3=casenumber3, percentage3=percentage3,
+                                                  colname4=colname4, percentage4_jun=percentage4_jun,
+                                                  colname5=colname5, percentage4_sep=percentage4_sep,
+                                                  colname6=colname6, percentage4_dec=percentage4_dec,
+                                                  colname7=colname7, casenumber5=casenumber5, percentage5=percentage5,
+                                                  casenumber6=casenumber6_1, percentage6=percentage6,
+                                                  colname8=colname9, casenumber7=casenumber7, percentage7=percentage7,
+                                                  colname9=colname11, casenumber8=casenumber8, percentage8=percentage8,
+                                                  colname10=colname13, casenumber9=casenumber9, percentage9=percentage9,
+                                                  colname11=colname15, casenumber10=casenumber10,
+                                                  percentage10=percentage10,
+                                                  colname12=colname17, casenumber11=casenumber11,
+                                                  percentage11=percentage11,
+                                                  casenumber12=casenumber12,
+                                                  colname13=colname19, casenumber13=casenumber13,
+                                                  percentage13=percentage13,
+                                                  casenumber14=casenumber14, percentage3_2=percentage3_2)
+        return timescalesstory
+
+    def SCRA_description(self,total_1,total_2,point1):
+        SCRAstory=SCRA_story.render(total_1=total_1,total_2=total_2,point1=point1)
+        return SCRAstory
 
     def unfinished_report(self,app_name, listTabs,story1,story2,story3,story4,story5,template_path,output_path='./output.docx'):
         #unfinishedreport=unfinished_report_template.render(story1=story1,story2=story2,story3=story3,story4=story4,story5=story5)

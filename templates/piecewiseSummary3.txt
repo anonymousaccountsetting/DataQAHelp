@@ -1,2 +1,12 @@
-It is worth noting that between the {{xcol}} {{startPoint| round(3)}} and {{endPoint| round(3)}}, {{ycol}} rises from {{yValue1}} to {{yValue2}}, which is the fastest rise among all segments.
-A one-unit increase in the {{xcol}} results in an increase of {{(slope) | round(3)}} in the mean value of the {{ycol}}.
+{% set difference = yValue2 - yValue1 %}
+{% set slope_description = "an increase" if slope > 0 else "a decrease" if slope < 0 else "no change" %}
+
+{% if difference > 0 %}
+It is worth noting that between the {{xcol}} {{startPoint| round(2)}} and {{endPoint| round(2)}}, {{ycol}} rises from {{yValue1| round(2)}} to {{yValue2| round(2)}}, which is the fastest rise among all segments.
+{% elif difference < 0 %}
+It is worth noting that between the {{xcol}} {{startPoint| round(2)}} and {{endPoint| round(2)}}, {{ycol}} falls from {{yValue1| round(2)}} to {{yValue2| round(2)}}, which is the fastest fall among all segments.
+{% else %}
+It is worth noting that between the {{xcol}} {{startPoint| round(2)}} and {{endPoint| round(2)}}, {{ycol}} remains constant at {{yValue1| round(2)}}.
+{% endif %}
+
+A one-unit increase in the {{xcol}} results in {{ slope_description }} of {{ slope| abs | round(2) }} in the mean value of the {{ycol}}.

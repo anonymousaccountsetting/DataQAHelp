@@ -1,3 +1,7 @@
+{%- if IPchange_percentage > 0 %}An increase of approximately {{ IPchange_percentage }}% of Initial/Pre-birth CPCC's held.
+{%- elif IPchange_percentage < 0 %}A decrease of approximately {{ IPchange_percentage|abs }}% of Initial/Pre-birth CPCC's held.
+{%- else %}No change in the percentage of Initial/Pre-birth CPCC's held.{% endif %}
+
 Over the past 5 years, there has been{%- if change_percentage < -50 %} a significant decrease ({{ change_percentage|abs|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
 {%- elif change_percentage < -10 %}  a decrease ({{ change_percentage|abs|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).
 {%- elif change_percentage > 50 %} a significant increase ({{ change_percentage|round(0) }}%) in the number of enquiries made to the CPR ({{ initial_year_value }} to {{ final_year_value }}).

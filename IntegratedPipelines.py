@@ -1,6 +1,7 @@
 import pandas as pd
 import DataScienceComponents as DC
 import NLGComponents as NC
+from docx.shared import RGBColor
 
 
 class general_datastory_pipeline:
@@ -136,16 +137,18 @@ class find_best_mode_pipeline:
 
 
 class special_pipelines_for_ACCCP:
-    def register_question1(self,app_name, listTabs, register_dataset, per1000inCity_col, per1000nation_col,
+    def register_question1(self, app_name, listTabs, register_dataset, per1000inCity_col, per1000nation_col,
                            table_col=['Period', 'Registrations In Aberdeen City',
                                       'Registrations per 1000 population in Aberdeen City',
                                       'Compared with last year for Aberdeen City'],
                            label='What are the emerging trends or themes emerging from local and comparators data?'):
         diff = DC.DataDescription().loop_mean_compare(register_dataset, per1000inCity_col, per1000nation_col)
-        app,listTabs,text=NC.special_view_for_ACCCP().register_question1_view(register_dataset, per1000inCity_col, diff, table_col, label, app_name, listTabs)
-        return (app,listTabs,text)
+        app, listTabs, text = NC.special_view_for_ACCCP().register_question1_view(register_dataset, per1000inCity_col,
+                                                                                  diff, table_col, label, app_name,
+                                                                                  listTabs)
+        return (app, listTabs, text)
 
-    def riskfactor_question1(self,app_name, listTabs, risk_factor_dataset, risk_factor_col, cityname="Aberdeen City",
+    def riskfactor_question1(self, app_name, listTabs, risk_factor_dataset, risk_factor_col, cityname="Aberdeen City",
                              max_num=5,
                              label='What are the emerging trends or themes emerging from local single agency data?'):
         row = 0
@@ -153,10 +156,12 @@ class special_pipelines_for_ACCCP:
         row = 1
         max_factor_lastyear = DC.DataDescription().find_row_n_max(risk_factor_dataset, risk_factor_col, row, max_num)
         same_factor = DC.DataDescription().detect_same_elements(max_factor, max_factor_lastyear)
-        app,listTabs,text=NC.special_view_for_ACCCP().riskfactor_question1_view(risk_factor_dataset, max_factor, same_factor, label, cityname, app_name, listTabs)
-        return (app,listTabs,text)
+        app, listTabs, text = NC.special_view_for_ACCCP().riskfactor_question1_view(risk_factor_dataset, max_factor,
+                                                                                    same_factor, label, cityname,
+                                                                                    app_name, listTabs)
+        return (app, listTabs, text)
 
-    def re_register_question4(self,app_name, listTabs, register_dataset, reregister_col, period_col='Period',
+    def re_register_question4(self, app_name, listTabs, register_dataset, reregister_col, period_col='Period',
                               national_average_reregistration='13 - 16%',
                               table_col=['Period', 'Re-Registrations In Aberdeen City',
                                          'Re-registrations as a % of registrations in Aberdeen City',
@@ -164,18 +169,23 @@ class special_pipelines_for_ACCCP:
                                          'Longest gap between registrations of Aberdeen City',
                                          'Shortest gap between registrations of Aberdeen City'],
                               label='To what extent is Aberdeen City consistent with the national and comparator averages for re-registration?  Can the CPC be assured that deregistered children receive at least 3 months’ post registration multi-agency support?'):
-        reregister_lastyear, period = DC.DataDescription().select_one_element(register_dataset, reregister_col, period_col)
-        app,listTabs,text=NC.special_view_for_ACCCP().re_register_question4_view(register_dataset, national_average_reregistration, reregister_lastyear, period,
-                                      table_col, label, app_name, listTabs)
-        return (app,listTabs,text)
+        reregister_lastyear, period = DC.DataDescription().select_one_element(register_dataset, reregister_col,
+                                                                              period_col)
+        app, listTabs, text = NC.special_view_for_ACCCP().re_register_question4_view(register_dataset,
+                                                                                     national_average_reregistration,
+                                                                                     reregister_lastyear, period,
+                                                                                     table_col, label, app_name,
+                                                                                     listTabs)
+        return (app, listTabs, text)
 
-    def remain_time_question5(self,app_name, listTabs, remain_data, check_col, period_col='Period',
+    def remain_time_question5(self, app_name, listTabs, remain_data, check_col, period_col='Period',
                               label='What is the number of children remaining on the CPR for more than 1 year and can the CPC be assured that it is necessary for any child to remain on the CPR for more than 1 year?'):
         zero_lastdata = DC.DataDescription().find_all_zero_after_arow(remain_data, check_col, period_col)
-        app,listTabs,text=NC.special_view_for_ACCCP().remain_time_question5_view(remain_data, zero_lastdata, label, app_name, listTabs)
-        return (app,listTabs,text)
+        app, listTabs, text = NC.special_view_for_ACCCP().remain_time_question5_view(remain_data, zero_lastdata, label,
+                                                                                     app_name, listTabs)
+        return (app, listTabs, text)
 
-    def enquiries_question6(self,app_name, listTabs, enquiries_data, AC_enquiries, AS_enquiries, MT_enquiries,
+    def enquiries_question6(self, app_name, listTabs, enquiries_data, AC_enquiries, AS_enquiries, MT_enquiries,
                             period_col='Period',
                             label='To what extent do agencies make use of the CPR?  If they are not utilising it, what are the reasons for that?'):
         period = enquiries_data[period_col]
@@ -185,23 +195,97 @@ class special_pipelines_for_ACCCP:
         ACmean = DC.DataDescription().find_column_mean(ACdata)
         ASmean = DC.DataDescription().find_column_mean(ASdata)
         MTmean = DC.DataDescription().find_column_mean(MTdata)
-        app,listTabs,text=NC.special_view_for_ACCCP().enquiries_question6_view(ACmean, ASmean, MTmean, ACdata, ASdata, MTdata, period, label, app_name, listTabs)
-        return (app,listTabs,text)
+        app, listTabs, text = NC.special_view_for_ACCCP().enquiries_question6_view(ACmean, ASmean, MTmean, ACdata,
+                                                                                   ASdata, MTdata, period, label,
+                                                                                   app_name, listTabs)
+        return (app, listTabs, text)
 
-    def ACCCP_questions(self,register_dataset,risk_factor_dataset,remain_data,enquiries_data,per1000inCity_col,per1000nation_col,risk_factor_col,reregister_col,check_col,period_col,AC_enquiries,AS_enquiries,MT_enquiries,template_path,output_path='./output.docx'):
-        app_name, listTabs=NC.start_app()
-        app, listTabs,story1=special_pipelines_for_ACCCP.register_question1(self,app_name, listTabs, register_dataset, per1000inCity_col, per1000nation_col)
-        app, listTabs,story2=special_pipelines_for_ACCCP.riskfactor_question1(self,app_name, listTabs, risk_factor_dataset, risk_factor_col)
-        app, listTabs,story3=special_pipelines_for_ACCCP.re_register_question4(self,app_name, listTabs, register_dataset, reregister_col)
-        app, listTabs,story4=special_pipelines_for_ACCCP.remain_time_question5(self,app_name, listTabs, remain_data, check_col,period_col)
-        app, listTabs,story5=special_pipelines_for_ACCCP.enquiries_question6(self,app_name, listTabs, enquiries_data, AC_enquiries, AS_enquiries, MT_enquiries,period_col)
+    def national_question(self, nationaldata, Authority1, Authority2, Authority3, point1, point2, IP1, IP2,
+                          IPchangeType):
+        data = DC.DataDescription().two_point_percent_differ(nationaldata, point1, point2)
+        initial_year_value = data[data['Authority'] == Authority1][point1].values[0]
+        final_year_value = data[data['Authority'] == Authority1][point2].values[0]
+        change_percentage = data[data['Authority'] == Authority1]['Change_Percentage'].values[0]
+        shirechange_percentage = data[data['Authority'] == Authority2]['Change_Percentage'].values[0]
+        Moraychange_percentage = data[data['Authority'] == Authority3]['Change_Percentage'].values[0]
+        data = DC.DataDescription().two_point_percent_differ(nationaldata, IP1, IP2)
+        IPchange_percentage = int(data[data['Authority'] == IPchangeType]['Change_Percentage'].values[0])
+        story = NC.special_view_for_ACCCP().national_data_view(int(change_percentage), initial_year_value,
+                                                               final_year_value,
+                                                               int(shirechange_percentage), int(Moraychange_percentage),
+                                                               IPchange_percentage)
+        return (story)
+
+    def timescales_question(self, data, colname1, colname2, colname3, colname4, colname5, colname6, colname7,
+                            colname8, colname9, colname10, colname11, colname12, colname13,
+                            colname14, colname15, colname16, colname17, colname18, colname19,
+                            colname20, colname21, colname22, colname23, colname24):
+        story = NC.special_view_for_ACCCP().timescales_description(data, colname1, colname2, colname3, colname4,
+                                                                   colname5, colname6, colname7,
+                                                                   colname8, colname9, colname10, colname11, colname12,
+                                                                   colname13,
+                                                                   colname14, colname15, colname16, colname17,
+                                                                   colname18, colname19,
+                                                                   colname20, colname21, colname22, colname23,
+                                                                   colname24)
+        return (story)
+
+    def SCRA_question(self, data, Authority, point1, point2):
+        total_1 = int(data[data['Authority'] == Authority][point1].values[0])
+        total_2 = int(data[data['Authority'] == Authority][point2].values[0])
+        story = NC.special_view_for_ACCCP().SCRA_description(total_1, total_2, point1)
+        return (story)
+
+    def ACCCP_questions(self, register_dataset, risk_factor_dataset, remain_data, enquiries_data, IPdata, SCRAdata,
+                        timedata, per1000inCity_col,
+                        per1000nation_col, risk_factor_col, reregister_col, check_col, period_col, AC_enquiries,
+                        AS_enquiries, MT_enquiries, Authority1, Authority2, Authority3, point1, point2, IP1, IP2,
+                        IPchangeType, Authority, time1, time2, colname1, colname2, colname3, colname4, colname5,
+                        colname6, colname7,
+                        colname8, colname9, colname10, colname11, colname12, colname13,
+                        colname14, colname15, colname16, colname17, colname18, colname19,
+                        colname20, colname21, colname22, colname23, colname24, template_path,
+                        output_path='./output.docx'):
+        app_name, listTabs = NC.start_app()
+        app, listTabs, story3 = special_pipelines_for_ACCCP.register_question1(self, app_name, listTabs,
+                                                                               register_dataset, per1000inCity_col,
+                                                                               per1000nation_col)
+        app, listTabs, story5 = special_pipelines_for_ACCCP.riskfactor_question1(self, app_name, listTabs,
+                                                                                 risk_factor_dataset, risk_factor_col)
+        app, listTabs, story6 = special_pipelines_for_ACCCP.re_register_question4(self, app_name, listTabs,
+                                                                                  register_dataset, reregister_col)
+        app, listTabs, story7 = special_pipelines_for_ACCCP.remain_time_question5(self, app_name, listTabs, remain_data,
+                                                                                  check_col, period_col)
+        app, listTabs, story8 = special_pipelines_for_ACCCP.enquiries_question6(self, app_name, listTabs,
+                                                                                enquiries_data, AC_enquiries,
+                                                                                AS_enquiries, MT_enquiries, period_col)
+        story1 = special_pipelines_for_ACCCP.national_question(self, IPdata, Authority1, Authority2, Authority3,
+                                                                 point1,
+                                                                 point2, IP1, IP2, IPchangeType)
+        story2 = special_pipelines_for_ACCCP.SCRA_question(self, SCRAdata, Authority, time1, time2)
+
+        story4 = special_pipelines_for_ACCCP.timescales_question(self, timedata, colname1, colname2, colname3,
+                                                                           colname4, colname5, colname6, colname7,
+                                                                           colname8, colname9, colname10, colname11,
+                                                                           colname12, colname13,
+                                                                           colname14, colname15, colname16, colname17,
+                                                                           colname18, colname19,
+                                                                           colname20, colname21, colname22, colname23,
+                                                                           colname24)
+        print(story1,story2,story4)
         replacements = {
             "{{story1}}": story1,
             "{{story2}}": story2,
             "{{story3}}": story3,
             "{{story4}}": story4,
-            "{{story5}}": story5
+            "{{story5}}": story5,
+            "{{story6}}": story6,
+            "{{story7}}": story7,
+            "{{story8}}": story8
         }
-        NC.fill_template(template_path, output_path, replacements)
-        app,listTabs=NC.special_view_for_ACCCP().unfinished_report(app_name, listTabs,story1,story2,story3,story4,story5,template_path)
+        NC.fill_template(template_path, output_path, replacements,RGBColor(255, 0, 0))
+        print('New document saved to '+output_path)
+        app, listTabs = NC.special_view_for_ACCCP().unfinished_report(app_name, listTabs, story1, story2, story3,
+                                                                      story4, story5, template_path)
         NC.run_app(app_name, listTabs)
+

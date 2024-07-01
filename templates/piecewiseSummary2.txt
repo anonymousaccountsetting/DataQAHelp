@@ -1,1 +1,4 @@
-From {{startPoint| round(3)}} to {{endPoint| round(3)}}, the segment slope is {{slope| round(3)}}.
+{% if slope > 0 %}From {{ startPoint| round(2) }} to {{ endPoint| round(2) }}, the segment shows an increase with a slope of {{ slope| round(2) }}.
+{% elif slope < 0 %}From {{ startPoint| round(2) }} to {{ endPoint| round(2) }}, the segment shows a decrease with a slope of {{ slope| abs | round(2) }}.
+{% else %}From {{ startPoint| round(2) }} to {{ endPoint| round(2) }}, the segment shows no change.
+{% endif %}

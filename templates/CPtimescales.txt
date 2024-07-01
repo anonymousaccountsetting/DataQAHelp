@@ -1,0 +1,13 @@
+In the period {{ colname1 }}, {{ casenumber1 }} Case Conferences were held. {{ casenumber2 }} were held in the previous quarter. {{ casenumber3 }} ({{ percentage3 }}%) Initial Child Protection Case Conferences were held within the 21 day timescale. 
+{%- if percentage3 ==percentage3_2 %} Although consistent with the preceding quarter,
+{%- else %} There was a {{ 'decrease' if percentage3 < percentage3_2 else 'increase' }} compared to the preceding quarter,
+{% endif %}{%- if percentage3 > percentage4_jun and percentage3 > percentage4_sep and percentage3 > percentage4_dec %} over time this has been a decreasing statistic from {{ percentage4_jun }}% in June 2016, {{ percentage4_sep }}% in September 2016 and {{ percentage4_dec }}% in December 2016.
+{%- elif percentage3 < percentage4_jun and percentage3 < percentage4_sep and percentage3 < percentage4_dec %} over time this has been an increasing statistic from {{ percentage4_jun }}% in June 2016, {{ percentage4_sep }}% in September 2016 and {{ percentage4_dec }}% in December 2016.
+{%- else %} over time this has shown variability with statistics at {{ percentage4_jun }}% in June 2016, {{ percentage4_sep }}% in September 2016 and {{ percentage4_dec }}% in December 2016.{% endif %}
+
+Pre-birth case conferences are held at no later than 28 weeks of pregnancy. {{ casenumber5 }} ({{ percentage5 }}%) of these were held within timescale compared to {{ casenumber6 }} ({{ percentage6 }}%) in the previous quarter.
+{{ casenumber7 }} ({{ percentage7 }}%) of invitations to CPCCs were issued with a minimum of 5 working days notice with {{ casenumber8 }} ({{ percentage8 }}%) of notification of decisions being issued to families within 24 hours. The CP Admin team are to be commended on these statistics. 
+{{ casenumber9 }} ({{ percentage9 }}%) of Child Protection Plans were issued within 5 calendar days with {{ casenumber10 }} ({{ percentage10 }}%) of minutes were issued within 15 calendar days. 
+{{ casenumber11 }} ({{ percentage11 }}%) of the first reviews were held within 3 months of the initial CPCC, with 
+{{ casenumber12 }} held out with timescale. Subsequent reviews are required to be held within 6 months. {{ casenumber13 }} ({{ percentage13 }}%) were held within the timescale and 
+{{ casenumber14 }} out with timescale. This is also an improvement from the previous quarter.
