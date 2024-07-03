@@ -13,7 +13,8 @@ import base64
 import language_tool_python
 import os
 from docx import Document
-
+from docx.shared import RGBColor
+import pandas as pd
 
 # Loading the folder that contains the txt templates
 
@@ -172,6 +173,59 @@ def replace_placeholder_in_run(run, placeholder, replacement_text):
 def replace_placeholder(paragraph, placeholder, replacement_text):
     for run in paragraph.runs:
         replace_placeholder_in_run(run, placeholder, replacement_text)
+
+def reshape_data(data, colname):
+    df = pd.DataFrame(data)
+
+    if colname not in df.columns:
+        raise ValueError(f"The specified column '{colname}' is not in the DataFrame")
+
+    df_transposed = df.set_index(colname).T
+    df_transposed.reset_index(inplace=True)
+    df_transposed.rename(columns={'index': colname}, inplace=True)
+
+    return df_transposed
+
+def replace_placeholder_with_table(doc, placeholder, df):
+    table = doc.add_table(rows=df.shape[0]+1, cols=df.shape[1])
+
+    table.style = 'Table Grid'
+
+    hdr_cells = table.rows[0].cells
+    for j, col in enumerate(df.columns):
+        run = hdr_cells[j].paragraphs[0].add_run(str(col))
+        run.font.color.rgb = RGBColor(255, 0, 0)
+
+    for i in range(df.shape[0]):
+        row_cells = table.rows[i + 1].cells
+        for j, value in enumerate(df.values[i]):
+            run = row_cells[j].paragraphs[0].add_run(str(value))
+            run.font.color.rgb = RGBColor(255, 0, 0)
+
+    for para in doc.paragraphs:
+        if placeholder in para.text:
+            inline = para.runs
+            for item in inline:
+                if placeholder in item.text:
+                    item.text = item.text.replace(placeholder, "")
+                    move_table_after(table, para)
+
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for para in cell.paragraphs:
+                    if placeholder in para.text:
+                        inline = para.runs
+                        for item in inline:
+                            if placeholder in item.text:
+                                item.text = item.text.replace(placeholder, "")
+                                move_table_after(table, para)
+
+
+def move_table_after(table, paragraph):
+    tbl, p = table._tbl, paragraph._element
+    p.addnext(tbl)
+
 
 def replace_placeholder_with_color(paragraph, placeholder, replacement_text, color):
     if placeholder in paragraph.text:

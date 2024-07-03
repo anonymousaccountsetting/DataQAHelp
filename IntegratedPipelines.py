@@ -2,6 +2,7 @@ import pandas as pd
 import DataScienceComponents as DC
 import NLGComponents as NC
 from docx.shared import RGBColor
+from docx import Document
 
 
 class general_datastory_pipeline:
@@ -250,7 +251,7 @@ class special_pipelines_for_ACCCP:
         app, listTabs, story3 = special_pipelines_for_ACCCP.register_question1(self, app_name, listTabs,
                                                                                register_dataset, per1000inCity_col,
                                                                                per1000nation_col)
-        app, listTabs, story5 = special_pipelines_for_ACCCP.riskfactor_question1(self, app_name, listTabs,
+        app, listTabs, story4 = special_pipelines_for_ACCCP.riskfactor_question1(self, app_name, listTabs,
                                                                                  risk_factor_dataset, risk_factor_col)
         app, listTabs, story6 = special_pipelines_for_ACCCP.re_register_question4(self, app_name, listTabs,
                                                                                   register_dataset, reregister_col)
@@ -260,19 +261,39 @@ class special_pipelines_for_ACCCP:
                                                                                 enquiries_data, AC_enquiries,
                                                                                 AS_enquiries, MT_enquiries, period_col)
         story1 = special_pipelines_for_ACCCP.national_question(self, IPdata, Authority1, Authority2, Authority3,
-                                                                 point1,
-                                                                 point2, IP1, IP2, IPchangeType)
+                                                               point1,
+                                                               point2, IP1, IP2, IPchangeType)
         story2 = special_pipelines_for_ACCCP.SCRA_question(self, SCRAdata, Authority, time1, time2)
 
-        story4 = special_pipelines_for_ACCCP.timescales_question(self, timedata, colname1, colname2, colname3,
-                                                                           colname4, colname5, colname6, colname7,
-                                                                           colname8, colname9, colname10, colname11,
-                                                                           colname12, colname13,
-                                                                           colname14, colname15, colname16, colname17,
-                                                                           colname18, colname19,
-                                                                           colname20, colname21, colname22, colname23,
-                                                                           colname24)
-        print(story1,story2,story4)
+        story5 = special_pipelines_for_ACCCP.timescales_question(self, timedata, colname1, colname2, colname3,
+                                                                 colname4, colname5, colname6, colname7,
+                                                                 colname8, colname9, colname10, colname11,
+                                                                 colname12, colname13,
+                                                                 colname14, colname15, colname16, colname17,
+                                                                 colname18, colname19,
+                                                                 colname20, colname21, colname22, colname23,
+                                                                 colname24)
+        print("Based on the data set, the application automatically generates the following content. The corresponding content and tables have been saved in a new document.")
+        stories = [story1, story2, story3, story4, story5, story6, story7, story8]
+
+        for story in stories:
+            print(story)
+
+        table1=NC.reshape_data(register_dataset,period_col)
+        table2=NC.reshape_data(risk_factor_dataset,period_col)
+        table4=NC.reshape_data(enquiries_data,period_col)
+
+        tables = {
+            "{{table1}}": table1,
+            "{{table2}}": table2,
+            "{{table3}}": remain_data,
+            "{{table4}}": table4
+        }
+        doc=Document(template_path)
+        for placeholder, df in tables.items():
+            NC.replace_placeholder_with_table(doc, placeholder, df)
+        doc.save(output_path)
+
         replacements = {
             "{{story1}}": story1,
             "{{story2}}": story2,
@@ -283,9 +304,8 @@ class special_pipelines_for_ACCCP:
             "{{story7}}": story7,
             "{{story8}}": story8
         }
-        NC.fill_template(template_path, output_path, replacements,RGBColor(255, 0, 0))
-        print('New document saved to '+output_path)
+        NC.fill_template(output_path, output_path, replacements, RGBColor(255, 0, 0))
+        print(f'New document saved to ({output_path}). Please review the report and make any necessary changes.')
         app, listTabs = NC.special_view_for_ACCCP().unfinished_report(app_name, listTabs, story1, story2, story3,
                                                                       story4, story5, template_path)
         NC.run_app(app_name, listTabs)
-
