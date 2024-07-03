@@ -279,16 +279,19 @@ class special_pipelines_for_ACCCP:
         for story in stories:
             print(story)
 
+        for col in risk_factor_dataset.columns:
+            if col != period_col:
+                risk_factor_dataset[col] = risk_factor_dataset[col].round(0).astype(int)
         table1=NC.reshape_data(register_dataset,period_col)
         table2=NC.reshape_data(risk_factor_dataset,period_col)
-        table4=NC.reshape_data(enquiries_data,period_col)
+        table3=NC.reshape_data(remain_data,period_col)
 
         tables = {
             "{{table1}}": table1,
             "{{table2}}": table2,
-            "{{table3}}": remain_data,
-            "{{table4}}": table4
+            "{{table3}}": table3,
         }
+
         doc=Document(template_path)
         for placeholder, df in tables.items():
             NC.replace_placeholder_with_table(doc, placeholder, df)
