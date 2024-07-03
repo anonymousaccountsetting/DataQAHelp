@@ -7,18 +7,24 @@ The DataQAHelper is a Python-based framework that integrates commonly used data 
 
 In summary, the main goal of this framework is to facilitate a quick start in developing data-to-text applications that transform unintuitive data analysis results into understandable FAQ-like textual reports.
 
-## A Simple Example
+## Simple Examples
 
-Here is an example of a simple application based on the DataQAHelper in action.
+Here are some examples of simple applications based on the DataQAHelper in action.
 
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo.gif?raw=true"
-     alt="DataQAHelper Application Demo"
+Check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelComparisonInterpretation.ipynb) with examples of how applications based on DataQAHelper recommend the most suitable machine learning model for a dataset.
+<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo2.gif?raw=true"
+     alt="DataQAHelper Application Demo 1"
      style="width:1920px" />
 
-Check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelComparisonInterpretation.ipynb) with examples of how DataQAHelper recommends the most suitable machine learning model for a dataset.
+And check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb) with examples of how applications based on DataQAHelper automatically interpret analysis results of different datasets.
+<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo.gif?raw=true"
+     alt="DataQAHelper Application Demo 2"
+     style="width:1920px" />
 
-And check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb) with examples of how DataQAHelper automatically interprets analysis results of different datasets.
-
+And check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_aSpecialApplicationCaseStudy.ipynb) with an example showcases a real case study involving the cyclical reporting project of Aberdeen's child protection services. The example demonstrates how the specialized application based on DataQAHelper, after completing the iterative refinement process, can automatically generate a substantial amount of content and corresponding tables for the report, significantly reducing the workload for the report writers.
+<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo3.gif?raw=true"
+     alt="DataQAHelper Application Demo 3"
+     style="width:1920px" />
 
 ## System Requirements 
 
