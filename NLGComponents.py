@@ -314,7 +314,7 @@ def TreeExplain(model, Xcol):
         else:
             explain = explain + (
                 "{space}node={node} is a split node: "
-                "go to node {left} if {feature} <= {threshold} "
+                "go to node {left} if {feature} <= {threshold:.2f} "
                 "else to node {right}.\n".format(
                     space=node_depth[i] * "\t",
                     node=i,
@@ -568,7 +568,8 @@ class DocumentplanningandDashboard:
 
     def GradientBoostingModelStats_view(self,data, Xcol, ycol, GBmodel, mse,r2, imp, questionset, gbr_params,
                                         train_errors, test_errors,portnum):
-
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         # Store importance figure
         plt.bar(Xcol, GBmodel.feature_importances_)
 
@@ -652,7 +653,138 @@ class DocumentplanningandDashboard:
         run_app(GB_app, listTabs, portnum)
 
 
+    def RandomForestRegressionModelStats_view(self,data, Xcol, ycol, tree_small, rf_small, DTData, r2, mse, questionset, portnum=8050):
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
+        # Save the tree as a png image
+
+        # os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz/bin/'
+        # export_graphviz(tree_small, out_file='pictures/small_tree.dot', feature_names=Xcol, rounded=True, precision=1,
+        #                 node_ids=True)
+        # (graph,) = pydot.graph_from_dot_file('pictures/small_tree.dot')
+        # graph.write_png('pictures/small_tree.png', prog=['dot'])
+        # encoded_image = base64.b64encode(open("pictures/small_tree.png", 'rb').read()).decode('ascii')
+
+        # Extract one of the decision trees from the Random Forest model
+        tree_idx = 0  # Index of the tree to visualize
+        estimator = rf_small.estimators_[tree_idx]
+        # Create a tree figure
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(20, 10))
+        tree.plot_tree(estimator, ax=ax, feature_names=Xcol, rounded=True, precision=1, node_ids=True)
+
+        # Save the tree figure as a PNG image
+        plt.savefig('pictures/tree_figure.png')
+        # Encode the image as base64
+        encoded_image = base64.b64encode(open("pictures/tree_figure.png", 'rb').read()).decode('ascii')
+
+        # Explain of the tree
+        explain = TreeExplain(rf_small.estimators_[0], Xcol)
+        # Importance score Figure
+        imp = ""
+        fig = px.bar(DTData)
+        for ind in DTData.index:
+            if DTData['important'][ind] == max(DTData['important']):
+                imp = ind
+        # print(DTData['important'])
+        RF_app, listTabs = start_app()
+        # Add to dashbord Model Statistics
+        intro = DecisionTree2.render(r2=r2, qs=questionset, indeNum=np.size(Xcol), modelName="Random Forest", Xcol=Xcol,
+                                     ycol=ycol, )
+        question1 = DecisionTreeQuestion.render(q=1, m="rf")
+        # intro = MicroLexicalization(intro)
+        aim = Xcol
+        aim.insert(0, ycol)
+        children = [html.P(question1), html.Br(), html.P(intro), dash_table.DataTable(data[aim].to_dict('records'),
+                                                                                      [{"name": i, "id": i} for i in
+                                                                                       data[aim].columns],
+                                                                                      style_table={'height': '400px',
+                                                                                                   'overflowY': 'auto'})]
+        dash_tab_add(listTabs, 'RandomForestModelStats', children)
+
+        aim.remove(ycol)
+        question2 = DecisionTreeQuestion.render(q=2)
+        tree_explain_story = explain
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)),
+                    html.P(question2), html.Br(), html.Pre(tree_explain_story)]
+        dash_tab_add(listTabs, 'Tree Explanation', children)
+
+        summary = DecisionTree3.render(imp=imp, ycol=ycol, r2=round(r2, 3), qs=questionset, mse=mse)
+        question3 = DecisionTreeQuestion.render(q=3)
+        children = [dcc.Graph(figure=fig), html.P(question3), html.Br(), html.P(summary)]
+        dash_tab_add(listTabs, 'Summary', children)
+
+        run_app(RF_app, listTabs, portnum)
+
+    def DecisionTreeRegressionModelStats_view(self,data, Xcol, ycol, DTData, DTmodel, r2, mse, questionset, portnum=8050):
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
+        # Importance score Figure
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
+        imp = ""
+        fig = px.bar(DTData)
+        for ind in DTData.index:
+            if DTData['important'][ind] == max(DTData['important']):
+                imp = ind
+
+        DT_app, listTabs = start_app()
+
+        # Add to dashbord Model Statistics
+        question1 = DecisionTreeQuestion.render(q=1, m="dt")
+        intro = DecisionTree2.render(r2=r2, qs=questionset, indeNum=np.size(Xcol), modelName="Decision Tree", Xcol=Xcol,
+                                     ycol=ycol, )
+        # intro = MicroLexicalization(intro)
+        aim = Xcol
+        aim.insert(0, ycol)
+        children = [html.P(question1), html.Br(), html.P(intro),
+                    dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in data[aim].columns],
+                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        dash_tab_add(listTabs, 'DecisionTreeModelStats', children)
+        aim.remove(ycol)
+
+        # Figure of the tree
+        fig2, axes = plt.subplots()
+
+        tree.plot_tree(DTmodel,
+                       feature_names=Xcol,
+                       class_names=ycol,
+                       filled=True,
+                       node_ids=True);
+        fig2.savefig('pictures/{}.png'.format("DT"))
+        encoded_image = base64.b64encode(open("pictures/DT.png", 'rb').read()).decode('ascii')
+
+        # # Explain of the tree
+        explain = TreeExplain(DTmodel, Xcol)
+        # Text need to fix here
+        tree_explain_story = explain
+        question2 = DecisionTreeQuestion.render(q=2)
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)),
+                    html.P(question2), html.Br(), html.Pre(tree_explain_story)]
+        dash_tab_add(listTabs, 'Tree Explanation', children)
+
+        summary = DecisionTree3.render(imp=imp, ycol=ycol, r2=round(r2, 3), qs=questionset, mse=mse)
+        question3 = DecisionTreeQuestion.render(q=3)
+        children = [dcc.Graph(figure=fig), html.P(question3), html.Br(), html.P(summary)]
+        dash_tab_add(listTabs, 'Summary', children)
+
+        run_app(DT_app, listTabs, portnum)
+
+
     def piecewise_linear_view(self,data, Xcol, ycol,model, slopes, segment_points, segment_values, max_slope_info,breaks,portnum):
+
+        x_hat = np.linspace(data[Xcol].min(), data[Xcol].max(), 100)
+        y_hat = model.predict(x_hat)
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
+        plt.figure(figsize=(10, 6))
+        sns.scatterplot(x=Xcol, y=ycol, data=data)
+        plt.plot(x_hat, y_hat, label='Piecewise Linear Fit', color='red')
+        plt.xlabel(Xcol)
+        plt.ylabel(ycol)
+        plt.legend()
+        plt.savefig('pictures/piecewise_linear_fit.png')
+        encoded_image = base64.b64encode(open("pictures/piecewise_linear_fit.png", 'rb').read()).decode('ascii')
 
         r2 = model.r_squared()
 
@@ -684,7 +816,7 @@ class DocumentplanningandDashboard:
         question=piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=4)
         summary=piecewiseSummary4.render(xcol=Xcol, ycol=ycol,merged_breaks=merged_breaks, output_slopes=output_slopes,startPoint=max_slope_info['start_end_points'][0],endPoint=max_slope_info['start_end_points'][1],slope=max_slope_info['slope'])
 
-        children = [html.P(question), html.Br(), html.P(summary)]
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)),html.P(question), html.Br(), html.P(summary)]
         dash_tab_add(listTabs, 'Overview', children)
 
         # Add to dashbord Linear Model Statistics
@@ -724,6 +856,8 @@ class DocumentplanningandDashboard:
 
     def RidgeClassifier_view(self,data, Xcol, ycol, rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, importances, class1,
                              class2,confusionmatrix,cv_scores):
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         _base64 = []
         ridge_app, listTabs = start_app()
         # Plot ROC curve
@@ -837,6 +971,8 @@ class DocumentplanningandDashboard:
 
     def KNeighborsClassifier_view(self,data, Xcol, ycol, accuracy, precision, feature_importances, recall, f1,
                                   confusionmatrix, cv_scores):
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         _base64 = []
         KNei_app, listTabs = start_app()
         # Print feature importances with column names
@@ -906,6 +1042,8 @@ class DocumentplanningandDashboard:
         run_app(KNei_app, listTabs)
 
     def SVCClassifier_view(self,data, Xcol, ycol, accuracy, precision, recall, f1, confusionmatrix, cv_scores):
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         _base64 = []
         svm_app, listTabs = start_app()
 
@@ -966,7 +1104,8 @@ class DocumentplanningandDashboard:
                                          [{"name": i, "id": i} for i in
                                           comapre_results.columns],style_table={'height': '400px', 'overflowY': 'auto'})    ]
         dash_tab_add(listTabs, "Model Evaluation Metrics", children)
-
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         create_scatter_plots(data, Xcol, ycol)
         for ind in Xcol:
             _base64.append(base64.b64encode(open(f'pictures/{ind}.png', 'rb').read()).decode('ascii'))
@@ -983,17 +1122,10 @@ class DocumentplanningandDashboard:
             dash_tab_add(listTabs, f'{ind} vs {ycol}', tab_content)
 
         run_app(BR_app, listTabs)
-        # app_name, listTabs = NC.start_app()
-        # NC.dash_with_table(app_name, listTabs, comparestory, dataset, "Model Compare Overview")
-        # _base64 = []
-        # _base64 = NC.read_figure(_base64, "Prediction Error")
-        # _base64 = NC.read_figure(_base64, "Feature Importance")
-        # _base64 = NC.read_figure(_base64, "SHAP summary")
-        # NC.dash_with_table(app_name, listTabs, fitstory, comapre_results, "Model credibility")
-        # # VW.dash_with_figure(app_name, listTabs, impstory, 'Variables Summary', _base64[1])
-        # NC.dash_with_two_figure(app_name, listTabs, impstory, 'Important Variables Summary', _base64[1],_base64[2])
-        # NC.run_app(app_name, listTabs)
+
     def FindBestClassifier_view(self,data,Xcol,ycol,comapre_results,fitstory,modelcomparestory,importance,pycaretname,modelname):
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         _base64 = []
         BR_app, listTabs = start_app()
 
@@ -1037,6 +1169,54 @@ class DocumentplanningandDashboard:
 
 
 class DocumentplanningNoDashboard:
+
+    def dataset_description(self,df):
+        corr_matrix = df.corr()
+        description=''
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i + 1, len(corr_matrix.columns)):
+                var1 = corr_matrix.columns[i]
+                var2 = corr_matrix.columns[j]
+                correlation = corr_matrix.iloc[i, j]
+                description = description+correlation_story.render(var1=var1, var2=var2, correlation=correlation)+"\n"
+        print(description)
+        sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+        plt.show()
+        return (description)
+
+    def simple_dataset_description(self, df):
+        corr_matrix = df.corr()
+        positive_pairs = []
+        negative_pairs = []
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i + 1, len(corr_matrix.columns)):
+                var1 = corr_matrix.columns[i]
+                var2 = corr_matrix.columns[j]
+                correlation = corr_matrix.iloc[i, j]
+                if correlation > 0:
+                    positive_pairs.append((var1, var2))
+                elif correlation < 0:
+                    negative_pairs.append((var1, var2))
+        description = correlation_story_2.render(positive_pairs=positive_pairs, negative_pairs=negative_pairs)
+        print(description)
+        sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+        plt.show()
+        return (description)
+
+    def dataset_information(self,df):
+
+
+        missing_values = df.isnull().sum()
+        unique_values = df.nunique()
+        columns = df.columns.tolist()
+        description = datasetinformation.render(columns=columns, missing_values=missing_values.to_dict(),
+                                      unique_values=unique_values.to_dict())
+        print(description)
+
+        df.hist(bins=30, figsize=(20, 15))
+        plt.show()
+        return (description)
+
     def CP_general_description(self,ycol,last_X,last_X2,last_y,difference,percentage_change,max_value,max_y_X):
 
         summary = piecewiseCP2.render(Xend=last_X, ycol=ycol,yend=last_y, diff=difference,percentagechange=percentage_change,Xlast=last_X2,ymax=max_value,Xmax=max_y_X)

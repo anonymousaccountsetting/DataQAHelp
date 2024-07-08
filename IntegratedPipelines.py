@@ -38,6 +38,24 @@ class general_datastory_pipeline:
         model, mse, rmse, r2,imp,train_errors,test_errors = DC.ModelFitting().GradientBoostingDefaultModel(data, Xcol,ycol, gbr_params)
         NC.DocumentplanningandDashboard().GradientBoostingModelStats_view(data, Xcol, ycol, model, mse, r2,imp, questionset, gbr_params,train_errors,test_errors,portnum)
 
+    def RandomForestFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], n_estimators=10,
+                               max_depth=3,portnum=8050):
+        if Xnewname != "" or ynewname != "":
+            data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
+        X = data[Xcol].values
+        y = data[ycol]
+        tree_small, rf_small, DTData, r2, mse, rmse = DC.ModelFitting().RandomForestRegressionDefaultModel(X, y, Xcol, n_estimators, max_depth)
+        NC.DocumentplanningandDashboard().RandomForestRegressionModelStats_view(data, Xcol, ycol, tree_small, rf_small, DTData, r2, mse, questionset,portnum)
+
+    def DecisionTreeFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], max_depth=3,portnum=8050):
+        if Xnewname != "" or ynewname != "":
+            data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
+        X = data[Xcol].values
+        y = data[ycol]
+        DTmodel, r2, mse, rmse, DTData = DC.ModelFitting().DecisionTreeRegressionDefaultModel(X, y, Xcol, max_depth)
+        NC.DocumentplanningandDashboard().DecisionTreeRegressionModelStats_view(data, Xcol, ycol, DTData, DTmodel, r2, mse, questionset,portnum)
+
+
     def piecewiselinearFit(self,data, Xcol, ycol, num_breaks,Xnewname="", ynewname="",portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)

@@ -215,7 +215,7 @@ class ModelFitting:
                 imp = ind
         return (model, mse, rmse, r2, imp, train_errors, test_errors)
 
-    def RandomForestDefaultModel(self,X, y, Xcol, n_estimators, max_depth):
+    def RandomForestRegressionDefaultModel(self,X, y, Xcol, n_estimators, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
         # Limit depth of tree to 3 levels
         rf_small = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth)
@@ -240,7 +240,7 @@ class ModelFitting:
         DTData = DataFrame(data=columns, index=Xcol)
         return (tree_small, rf_small, DTData, r2, mse, rmse)
 
-    def DecisionTreeDefaultModel(self,X, y, Xcol, max_depth):
+    def DecisionTreeRegressionDefaultModel(self,X, y, Xcol, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
         model = DecisionTreeRegressor(random_state=0, max_depth=max_depth)
         model.fit(X_train, y_train)
@@ -381,6 +381,52 @@ class ModelFitting:
         confusionmatrix = confusion_matrix(y_test, y_pred)
         cv_scores = cross_val_score(clf, X, y, cv=cvnum)  # 5-fold cross-validation
         return (accuracy,precision,recall,f1,confusionmatrix,cv_scores)
+
+    def kmeanclustermodel(self,X, Xcol, df_agg, minnum_clusters=1, maxnum_clusters=11, n_clusters=5):
+        # Select features for segmentation
+        # X = df_agg[Xcol].values
+
+        # Standardize features
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+
+        # Determine optimal number of clusters
+        wcss = []
+        for i in range(minnum_clusters, maxnum_clusters):
+            kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
+            kmeans.fit(X_scaled)
+            wcss.append(kmeans.inertia_)
+
+        # find the elbow point
+        diffs = np.diff(wcss)
+        diffs_ratio = diffs[1:] / diffs[:-1]
+        elbow_point = np.argmin(diffs_ratio) + 1
+
+        # store the optimal number of clusters
+        best_n_clusters = elbow_point + 1
+
+        # Apply k-means clustering
+        n_clusters = n_clusters
+        kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=42)
+        y_pred = kmeans.fit_predict(X_scaled)
+
+        # Add cluster labels to original dataset
+        df_agg['Cluster'] = y_pred
+        # Print summary statistics by cluster
+        summary = df_agg.groupby('Cluster').agg({col: 'sum' for col in Xcol})
+        print(summary)
+
+        # Calculate and print clustering performance metrics
+        silhouette_score_value = silhouette_score(X_scaled, y_pred)
+        calinski_harabasz_score_value = calinski_harabasz_score(X_scaled, y_pred)
+        davies_bouldin_score_value = davies_bouldin_score(X_scaled, y_pred)
+
+        print('Silhouette Score: {:.3f}'.format(silhouette_score_value))
+        print('Calinski Harabasz Score: {:.3f}'.format(calinski_harabasz_score_value))
+        print('davies bouldin score: {:.3f}'.format(davies_bouldin_score_value))
+
+        return (wcss, summary, best_n_clusters, silhouette_score_value, calinski_harabasz_score_value,
+                davies_bouldin_score_value)
 
     def PValueCalculation(self,data,Xcol,ycol):
         X = data[Xcol].values
