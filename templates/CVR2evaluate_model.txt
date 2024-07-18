@@ -1,0 +1,13 @@
+{% set low_r2 = 0.6 %}
+{% set high_r2 = 0.8 %}
+Cross-validation is a technique for evaluating model performance by repeatedly splitting the dataset into training and validation sets to ensure the model's generalization ability; it helps determine if a model is overfitting or underfitting by measuring its performance across different splits.
+{% if cv_r2_mean < low_r2 %}
+Cross-validation results indicate the model is underfitting.
+{% elif train_r2 > high_r2 and cv_r2_mean < low_r2 %}
+Cross-validation results indicate the model is overfitting as the training R-squared is high but the cross-validation R-squared is low.
+{% elif diff > 0.2 %}
+Cross-validation results indicate the model might be overfitting as there is a large difference between training R-squared and cross-validation R-squared.
+{% else %}
+Cross-validation results indicate the model fits well.
+{% endif %}
+

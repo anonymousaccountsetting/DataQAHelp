@@ -1,0 +1,1 @@
+The feature importance in the Gradient Boosting Regression Model indicates the relative contribution of each feature to the model's predictive power, highlighting which features most significantly impact the prediction outcomes. The most important feature for the model is {{imp}}.

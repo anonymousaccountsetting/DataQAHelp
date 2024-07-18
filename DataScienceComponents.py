@@ -28,9 +28,22 @@ import cv2
 import statistics
 import heapq
 from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
+def evaluate_model(model, X_train, X_test, y_train, y_test):
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
 
+    train_r2 = r2_score(y_train, y_train_pred)
+    test_r2 = r2_score(y_test, y_test_pred)
+    train_mae = mean_absolute_error(y_train, y_train_pred)
+    test_mae = mean_absolute_error(y_test, y_test_pred)
 
+    cv_r2_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='r2')
+    cv_r2_mean = np.mean(cv_r2_scores)
+
+    return train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean
 
 class DataEngineering:
     def NormalizeData(self, dataset):
@@ -186,34 +199,31 @@ class ModelFitting:
 
         return (model, devDdf,accuracy,auc)
 
+
     def GradientBoostingDefaultModel(self,data, Xcol,ycol, gbr_params):
         X = data[Xcol].values
         y = data[ycol]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
         model = ensemble.GradientBoostingRegressor(**gbr_params)
         model.fit(X_train, y_train)
-
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
         mse = mean_squared_error(y_test, model.predict(X_test))
-        rmse = mse ** (1 / 2.0)
         r2 = model.score(X_test, y_test)
         importance = model.feature_importances_
-        train_errors = []
-        test_errors = []
 
-        for i, y_pred in enumerate(model.staged_predict(X_train)):
-            if i % 10 == 0:
-                mse_train = mean_squared_error(y_train, y_pred)
-                train_errors.append(np.round(mse_train, 3))
-                y_pred_test = model.staged_predict(X_test)
-                mse_test = mean_squared_error(y_test, next(islice(y_pred_test, i + 1)))
-                test_errors.append(np.round(mse_test, 3))
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean=evaluate_model(model, X_train, X_test, y_train, y_test)
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
         imp = ""
         for ind in DTData.index:
             if DTData['important'][ind] == max(DTData['important']):
                 imp = ind
-        return (model, mse, rmse, r2, imp, train_errors, test_errors)
+            elif DTData['important'][ind] == min(DTData['important']):
+                lessimp=ind
+
+        return (model, mse, mae, r2, imp, lessimp,train_r2, test_r2,train_mae,test_mae,cv_r2_scores,cv_r2_mean,mape)
 
     def RandomForestRegressionDefaultModel(self,X, y, Xcol, n_estimators, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -226,19 +236,18 @@ class ModelFitting:
         r2 = rf_small.score(X_train, y_train)
         # Use the forest's predict method on the test data
         predictions = rf_small.predict(X_test)
-        # Calculate the absolute errors
-        errors = abs(predictions - y_test)
         # Calculate mean absolute percentage error (MAPE)
-        mape = 100 * (abs(predictions - y_test) / y_test)
+        mape = np.mean(np.abs((y_test - predictions) / y_test)) * 100
         # Calculate and display accuracy
-        accuracy = 100 - np.mean(mape)
         mae = metrics.mean_absolute_error(y_test, predictions)
         mse = metrics.mean_squared_error(y_test, predictions)
-        rmse = mse ** (1 / 2.0)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean=evaluate_model(rf_small, X_train, X_test, y_train, y_test)
+
         importance = rf_small.feature_importances_
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
-        return (tree_small, rf_small, DTData, r2, mse, rmse)
+        return (rf_small, DTData, r2, mse, mae,mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean)
 
     def DecisionTreeRegressionDefaultModel(self,X, y, Xcol, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -247,23 +256,24 @@ class ModelFitting:
         predictions = model.predict(X_test)
         r2 = model.score(X_train, y_train)
         mse = mean_squared_error(y_test, predictions)
-        rmse = mse ** (1 / 2.0)
+        mae = metrics.mean_absolute_error(y_test, predictions)
         importance = model.feature_importances_
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
 
-        return (model, r2, mse, rmse, DTData)
+        mape = np.mean(np.abs((y_test - predictions) / y_test)) * 100
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean=evaluate_model(model, X_train, X_test, y_train, y_test)
+
+        return (model, r2, mse, mae, mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,DTData)
 
     def piecewise_linear_fit(self,data, Xcol, ycol, num_breaks):
         """
         Perform piecewise linear fit using the pwlf library.
-
         Parameters:
         - dataframe: pandas DataFrame
         - Xcol: Name of the column to be used as X data
         - ycol: Name of the column to be used as y data
         - num_breaks: Number of breaks (segments + 1)
-
         Returns:
         - model: Fitted pwlf model
         - slopes: Slopes of each segment
@@ -275,6 +285,9 @@ class ModelFitting:
         # Extract data
         x = data[Xcol].values
         y = data[ycol].values
+
+        # print(x)
+        # print(y)
 
         # Fit the model
         my_pwlf = pwlf.PiecewiseLinFit(x, y)
@@ -295,9 +308,30 @@ class ModelFitting:
             'start_end_points': segment_points[max_slope_idx],
             'start_end_values': segment_values[max_slope_idx]
         }
-        r2 = my_pwlf.r_squared()
 
-        return my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks
+        segment_r2_values = []
+        for i in range(len(breaks) - 1):
+            start, end = breaks[i], breaks[i + 1]
+            indices = (x >= start) & (x <= end)
+            x_segment = x[indices]
+            y_segment = y[indices]
+            y_segment_pred = my_pwlf.predict(x_segment)
+            r2 = r2_score(y_segment, y_segment_pred)
+            segment_r2_values.append(r2)
+        y_hat = my_pwlf.predict(x)
+        mse = mean_squared_error(y, y_hat)
+        mae = mean_absolute_error(y, y_hat)
+        n = len(y)
+        log_likelihood = -0.5 * n * np.log(2 * np.pi * mse) - 0.5 * n
+        # AIC and BIC
+        k = num_breaks + 1  # number of parameters = number of segments + 1 (intercept)
+        aic = 2 * k - 2 * log_likelihood
+        mse = mean_squared_error(y, y_hat)
+        log_likelihood = -0.5 * n * np.log(2 * np.pi * mse) - 0.5 * n
+        bic = k * np.log(n) - 2 * log_likelihood
+
+        return my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,segment_r2_values,mse,mae,bic,aic
+
 
     def RidgeClassifierModel(self,dataset, Xcol, ycol,class1,class2,cvnum=5):
         X = dataset[Xcol]

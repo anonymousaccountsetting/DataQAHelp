@@ -1,0 +1,8 @@
+{{ var1 }} and {{ var2 }} have a correlation of {{ correlation | round(2) }}.
+{%- if correlation > 0.8 %} This indicates a strong positive relationship.
+{%- elif correlation > 0.5 %} This indicates a moderate positive relationship.
+{%- elif correlation > 0 %} This indicates a weak positive relationship.
+{%- elif correlation < -0.8 %} This indicates a strong negative relationship.
+{%- elif correlation < -0.5 %} This indicates a moderate negative relationship.
+{%- elif correlation < 0 %} This indicates a weak negative relationship.
+{%- else %} There is no linear relationship. {%- endif -%}

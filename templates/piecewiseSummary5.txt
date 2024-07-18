@@ -1,0 +1,10 @@
+The breakpoints for the piecewise linear fit are: 
+{% for i in range(breaks|length) %}
+    {%- if i == breaks|length - 1 -%}
+        and {{ '%.1f' % breaks[i] }}.
+    {%- elif i == breaks|length - 2 -%}
+        {{ '%.1f' % breaks[i] }}
+    {%- else -%}
+        {{ '%.1f' % breaks[i] }},
+    {%- endif %}
+{% endfor %}

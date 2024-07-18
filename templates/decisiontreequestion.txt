@@ -1,5 +1,5 @@
 {%- if q==1 -%}
-Question: Does the{% if m=="rf" %} random forest{% elif m=="dt" %} decision tree{% elif m=="gb" %} gradient boosting{% endif %} model fit the dataset well?
+Question: Does the{% if m=="rf" %} random forest regression{% elif m=="dt" %} decision tree regression{% elif m=="gb" %} gradient boosting regression{% endif %} model fit the dataset well?
 {%- elif q==2 -%}
 Question: How does the model populate the nodes of the tree?
 {%- elif q==3 -%}

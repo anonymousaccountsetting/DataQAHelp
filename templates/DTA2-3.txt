@@ -1,0 +1,1 @@
+The feature importance in the Decision Tree Regression Model indicates the relative contribution of each feature to the model's predictive power, highlighting which features most significantly impact the prediction outcomes. The feature importances sorted from highest to lowest are:{% for feature in sorted_Xcol %} - {{ feature }}{% endfor %}

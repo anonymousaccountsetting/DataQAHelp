@@ -1,0 +1,13 @@
+{% set low_r2 = 0.6 %}
+{% set high_r2 = 0.8 %}
+When considering the R-squared values, it's clear that the model's generalization is being evaluated. 
+{% if train_r2 < low_r2 and test_r2 < low_r2 %}
+Because both training and testing R-squared are low, the model could be underfitting.
+{% elif train_r2 > high_r2 and test_r2 < low_r2 %}
+Because the training R-squared is high but the testing R-squared is low, the model is overfitting.
+{% elif diff > 0.2 %}
+Because there is a large difference between training and testing R-squared, the model might be overfitting.
+{% else %}
+The model fits well as both training and testing R-squared are high and similar.
+{% endif %}
+

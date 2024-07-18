@@ -1,0 +1,2 @@
+{% for column in columns %}The column '{{ column }}' has {{ missing_values[column] }} missing values and {{ unique_values[column] }} unique values.
+{% endfor %}

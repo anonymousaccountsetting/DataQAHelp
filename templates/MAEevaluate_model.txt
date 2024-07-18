@@ -1,0 +1,13 @@
+{% set low_mae = 0.2 %}
+{% set high_mae = 0.5 %}
+Similarly, when analyzing the Mean Absolute Error (MAE), we see a consistent pattern in model performance.
+{% if train_mae > high_mae and test_mae > high_mae %}
+Because both training and testing MAE are high, the model could be underfitting.
+{% elif train_mae < low_mae and test_mae > high_mae %}
+Because the training MAE is low but the testing MAE is high, the model is overfitting.
+{% elif diff > 0.2 %}
+Because there is a large difference between training and testing MAE, the model might be overfitting.
+{% else %}
+The model fits well as both training and testing MAE are low and similar.
+{% endif %}
+

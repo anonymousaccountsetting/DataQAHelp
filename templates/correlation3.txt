@@ -1,0 +1,12 @@
+{% if positive_pairs -%} The following pairs of variables have positive correlations:
+{% for pair in positive_pairs %}- {{ pair[0] }} and {{ pair[1] }}
+{% endfor %}
+{%- else -%}
+There are no positively correlated pairs.
+{%-endif %}
+{% if negative_pairs %}The following pairs of variables have negative correlations:
+{% for pair in negative_pairs %}- {{ pair[0] }} and {{ pair[1] }}
+{% endfor %}
+{%- else -%}
+There are no negatively correlated pairs.
+{% endif %}

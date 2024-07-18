@@ -34,15 +34,37 @@ model_comparison = env.get_template('modelcomparison.txt')
 correlation_state = env.get_template('correlation.txt')
 prediction_results = env.get_template('prediction.txt')
 linearSummary = env.get_template('linearSummary.txt')
-linearA1_1=env.get_template('linearA1-1.txt')
-linearA1_2=env.get_template('linearA1-2.txt')
-linearA1_3=env.get_template('linearA1-3.txt')
-linearA2_1=env.get_template('linearA2-1.txt')
-linearA2_2=env.get_template('linearA2-2.txt')
-linearA2_3=env.get_template('linearA2-3.txt')
 linearSummary2 = env.get_template('linearSummary2.txt')
+linearA1_1 = env.get_template('linearA1-1.txt')
+linearA1_2 = env.get_template('linearA1-2.txt')
+linearA1_3 = env.get_template('linearA1-3.txt')
+linearA2_1 = env.get_template('linearA2-1.txt')
+linearA2_2 = env.get_template('linearA2-2.txt')
+linearA2_3 = env.get_template('linearA2-3.txt')
 linearSummary3 = env.get_template('linearSummary3.txt')
 linearQuestion = env.get_template('linearQuestionset.txt')
+GBRA1_1 = env.get_template('GBRA1-1.txt')
+GBRA1_2 = env.get_template('GBRA1-2.txt')
+GBRA1_3 = env.get_template('GBRA1-3.txt')
+GBRA2_1 = env.get_template('GBRA2-1.txt')
+GBRA2_2 = env.get_template('GBRA2-2.txt')
+GBRA2_3 = env.get_template('GBRA2-3.txt')
+RFA1_1 = env.get_template('RFA1-1.txt')
+RFA1_2 = env.get_template('RFA1-2.txt')
+RFA1_3 = env.get_template('RFA1-3.txt')
+RFA2_1 = env.get_template('RFA2-1.txt')
+RFA2_2 = env.get_template('RFA2-2.txt')
+RFA2_3 = env.get_template('RFA2-3.txt')
+DTA1_1 = env.get_template('DTA1-1.txt')
+DTA1_2 = env.get_template('DTA1-2.txt')
+DTA1_3 = env.get_template('DTA1-3.txt')
+DTA2_1 = env.get_template('DTA2-1.txt')
+DTA2_2 = env.get_template('DTA2-2.txt')
+DTA2_3 = env.get_template('DTA2-3.txt')
+R2evaluatemodel= env.get_template('R2evaluate_model.txt')
+MAEevaluatemodel= env.get_template('MAEevaluate_model.txt')
+CVR2evaluatemodel= env.get_template('CVR2evaluate_model.txt')
+
 DecisionTree1 = env.get_template('decisiontree1.txt')
 DecisionTree2 = env.get_template('decisiontree2.txt')
 DecisionTree3 = env.get_template('decisiontree3.txt')
@@ -55,12 +77,15 @@ GAMslinear_sum = env.get_template('GAMsLinearL4')
 GB1 = env.get_template('GB1')
 GB2 = env.get_template('GB2')
 GB3 = env.get_template('GB3')
-piecewiseQuestion=env.get_template('piecewiseQuestion.txt')
+piecewiseQuestion = env.get_template('piecewiseQuestion.txt')
 piecewiseSummary = env.get_template('piecewiseSummary.txt')
 piecewiseSummary2 = env.get_template('piecewiseSummary2.txt')
 piecewiseSummary3 = env.get_template('piecewiseSummary3.txt')
 piecewiseSummary4 = env.get_template('piecewiseSummary4.txt')
-pvaluesummary=env.get_template('pvaluesummary.txt')
+piecewiseSummary5 = env.get_template('piecewiseSummary5.txt')
+piecewiseSummary6 = env.get_template('piecewiseSummary6.txt')
+piecewiseSummary7 = env.get_template('piecewiseSummary7.txt')
+pvaluesummary = env.get_template('pvaluesummary.txt')
 
 #For Casestudy
 piecewiseCP1=env.get_template('piecewiseCP1.txt')
@@ -99,6 +124,9 @@ clusterGroup = env.get_template('clusterGroup.txt')
 basicdescription = env.get_template('basicdescription.txt')
 simpletrend = env.get_template('simpletrend.txt')
 modeloverfit = env.get_template('modeloverfit.txt')
+correlation_story = env.get_template('correlation2.txt')
+correlation_story_2 = env.get_template('correlation3.txt')
+datasetinformation = env.get_template('dataset_information.txt')
 
 # variables which each load a different segmented regression template
 segmented_R2P = env.get_template('testPiecewisePwlfR2P')
@@ -266,6 +294,17 @@ def ThreeSubtab(child1,child2,child3):
         html.P(child3)
     ])
     return (subtab1,subtab2,subtab3)
+
+def TwoSubtab(child1, child2):
+    subtab1 = dcc.Tab(label='Simple Answer', children=[
+        html.P(child1)
+    ])
+
+    subtab2 = dcc.Tab(label='Detailed Answer', children=[
+        html.P(child2)
+    ])
+
+    return (subtab1, subtab2)
 
 def create_scatter_plots(data, Xcol, ycol):
     if not os.path.exists('pictures'):
@@ -566,8 +605,8 @@ class DocumentplanningandDashboard:
         dash_tab_add(listTabs, 'Summary', children)
         run_app(logistic_app, listTabs, portnum)
 
-    def GradientBoostingModelStats_view(self,data, Xcol, ycol, GBmodel, mse,r2, imp, questionset, gbr_params,
-                                        train_errors, test_errors,portnum):
+    def GradientBoostingModelStats_view(self, data, Xcol, ycol, GBmodel, mse, mae,r2, imp, lessimp,questionset, gbr_params,train_r2, test_r2,train_mae,test_mae,cv_r2_scores,cv_r2_mean, mape,portnum):
+
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         # Store importance figure
@@ -576,11 +615,6 @@ class DocumentplanningandDashboard:
         plt.title("Importance Score")
         plt.savefig('pictures/{}.png'.format("GB1"))
         plt.clf()
-
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(20, 10))  # Set the figure size as desired
-        tree.plot_tree(GBmodel.estimators_[0][0], ax=ax, feature_names=Xcol, rounded=True, precision=1, node_ids=True)
-        plt.savefig('pictures/tree_figure.png')
-        encoded_image = base64.b64encode(open("pictures/tree_figure.png", 'rb').read()).decode('ascii')
 
         _base64 = []
         _base64.append(base64.b64encode(open('pictures/{}.png'.format("GB1"), 'rb').read()).decode('ascii'))
@@ -600,8 +634,11 @@ class DocumentplanningandDashboard:
         plt.clf()
         _base64.append(base64.b64encode(open('pictures/{}.png'.format("GB2"), 'rb').read()).decode('ascii'))
 
-        plt.plot(train_errors, label='Training MSE')
-        plt.plot(test_errors, label='Testing MSE')
+        plt.plot(cv_r2_scores, label='Cross-Validation R²')
+        plt.axhline(y=cv_r2_mean, color='r', linestyle='--', label='Mean Cross-Validation R²')
+        plt.xlabel('Fold')
+        plt.ylabel('R²')
+        plt.title('Cross-Validation R² Scores')
         plt.legend()
         plt.savefig('pictures/{}.png'.format("GB3"))
         plt.clf()
@@ -610,91 +647,104 @@ class DocumentplanningandDashboard:
         GB_app, listTabs = start_app()
         # Add to dashbord Model Statistics
         question1 = DecisionTreeQuestion.render(q=1, m="gb")
-        intro = DecisionTree2.render(r2=r2, qs=questionset, indeNum=np.size(Xcol), modelName="Gradient Boosting",
-                                     Xcol=Xcol,
-                                     ycol=ycol, )
+        text1 = GBRA1_1.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol)
+        rmse = mse ** (1 / 2.0)
+        text2 = GBRA1_2.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape)
+        text3 = GBRA1_3.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape, mse=mse, rmse=rmse, mae=mae)
         # micro planning
         # intro = model.MicroLexicalization(intro)
+
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+
         aim = Xcol
         aim.insert(0, ycol)
-
-
-        children = [html.P(question1), html.Br(), html.P(intro),
-                        dash_table.DataTable(data[aim].to_dict('records'),
-                                             [{"name": i, "id": i} for i in data[aim].columns],
-                                             style_table={'height': '400px', 'overflowY': 'auto'})]
+        # add subtab to the tab
+        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in data[aim].columns],
+                                         style_table={'height': '400px', 'overflowY': 'auto'})]
         dash_tab_add(listTabs, 'Gradient Boosting Stats', children)
         aim.remove(ycol)
 
-        explain = TreeExplain(GBmodel.estimators_[0][0], Xcol)
-        # listTabs.append(dcc.Tab(label="Training & Test Deviance", children=[
-        #     html.Img(src='data:image/png;base64,{}'.format(_base64[1])), html.P(explain)
-        # ]))
-        question2 = DecisionTreeQuestion.render(q=2)
-        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)), html.P(question2), html.Br(),
-                        html.Pre(explain)]
-        dash_tab_add(listTabs, 'Tree Explanation', children)
+        text1 = GBRA2_1.render(imp=imp)
+        text2=GBRA2_2.render(imp=imp,lessimp=lessimp)
+        feature_importances = GBmodel.feature_importances_
+        importance_df = pd.DataFrame({'Feature': Xcol, 'Importance': feature_importances})
+        importance_df = importance_df.sort_values(by='Importance', ascending=False).reset_index(drop=True)
+        sorted_Xcol = importance_df['Feature'].tolist()
+        text3=GBRA2_3.render(sorted_Xcol=sorted_Xcol)
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
 
-        summary = DecisionTree3.render(imp=imp, ycol=ycol, r2=round(r2, 3), qs=questionset, mse=round(mse, 3))
         question3 = DecisionTreeQuestion.render(q=3)
 
         children = [html.Img(src='data:image/png;base64,{}'.format(_base64[0])), html.P(question3), html.Br(),
-                        html.P(summary), ]
-        dash_tab_add(listTabs, 'Summary', children)
+                    dcc.Tabs([subtab1, subtab2, subtab3])]
+        dash_tab_add(listTabs, 'Feature Importances', children)
 
-        overfit = modeloverfit.render()
+
         question4 = DecisionTreeQuestion.render(q=4)
+        text1 = CVR2evaluatemodel.render(cv_r2_mean=cv_r2_mean, train_r2=train_r2,diff=abs(train_r2 - cv_r2_mean))
+        text2 = text1 +'\n'+ R2evaluatemodel.render(train_r2=train_r2,test_r2=test_r2,diff=abs(train_r2 - test_r2))
+        text3 = text2 +'\n'+ MAEevaluatemodel.render(train_mae=train_mae,test_mae=test_mae,diff=abs(train_mae - test_mae))
 
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
 
         children = [html.Img(src='data:image/png;base64,{}'.format(_base64[2])), html.P(question4), html.Br(),
-                        html.P(overfit), ]
+                    dcc.Tabs([subtab1, subtab2, subtab3]) ]
         dash_tab_add(listTabs, 'Model Fitting', children)
 
         run_app(GB_app, listTabs, portnum)
 
-
-    def RandomForestRegressionModelStats_view(self,data, Xcol, ycol, tree_small, rf_small, DTData, r2, mse, questionset, portnum=8050):
+    def RandomForestRegressionModelStats_view(self, data, Xcol, ycol, rf_small, DTData, r2, mse, mae,mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,
+                                              questionset, portnum=8050):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
-        # Save the tree as a png image
 
-        # os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz/bin/'
-        # export_graphviz(tree_small, out_file='pictures/small_tree.dot', feature_names=Xcol, rounded=True, precision=1,
-        #                 node_ids=True)
-        # (graph,) = pydot.graph_from_dot_file('pictures/small_tree.dot')
-        # graph.write_png('pictures/small_tree.png', prog=['dot'])
-        # encoded_image = base64.b64encode(open("pictures/small_tree.png", 'rb').read()).decode('ascii')
+        plt.bar(Xcol, rf_small.feature_importances_)
 
-        # Extract one of the decision trees from the Random Forest model
-        tree_idx = 0  # Index of the tree to visualize
-        estimator = rf_small.estimators_[tree_idx]
-        # Create a tree figure
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(20, 10))
-        tree.plot_tree(estimator, ax=ax, feature_names=Xcol, rounded=True, precision=1, node_ids=True)
+        plt.title("Importance Score")
+        plt.savefig('pictures/{}.png'.format("RF1"))
+        plt.clf()
 
-        # Save the tree figure as a PNG image
-        plt.savefig('pictures/tree_figure.png')
-        # Encode the image as base64
-        encoded_image = base64.b64encode(open("pictures/tree_figure.png", 'rb').read()).decode('ascii')
+        _base64 = []
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("RF1"), 'rb').read()).decode('ascii'))
 
-        # Explain of the tree
-        explain = TreeExplain(rf_small.estimators_[0], Xcol)
+        plt.plot(cv_r2_scores, label='Cross-Validation R²')
+        plt.axhline(y=cv_r2_mean, color='r', linestyle='--', label='Mean Cross-Validation R²')
+        plt.xlabel('Fold')
+        plt.ylabel('R²')
+        plt.title('Cross-Validation R² Scores')
+        plt.legend()
+        plt.savefig('pictures/{}.png'.format("RF2"))
+        plt.clf()
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("RF2"), 'rb').read()).decode('ascii'))
+
         # Importance score Figure
-        imp = ""
-        fig = px.bar(DTData)
+        imp ,lessimp= "",""
         for ind in DTData.index:
             if DTData['important'][ind] == max(DTData['important']):
                 imp = ind
+            elif DTData['important'][ind] == min(DTData['important']):
+                lessimp = ind
         # print(DTData['important'])
         RF_app, listTabs = start_app()
         # Add to dashbord Model Statistics
-        intro = DecisionTree2.render(r2=r2, qs=questionset, indeNum=np.size(Xcol), modelName="Random Forest", Xcol=Xcol,
-                                     ycol=ycol, )
+
         question1 = DecisionTreeQuestion.render(q=1, m="rf")
+
+        text1 = RFA1_1.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol)
+        rmse = mse ** (1 / 2.0)
+        text2 = RFA1_2.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape)
+        text3 = RFA1_3.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape, mse=mse, rmse=rmse, mae=mae)
+        # micro planning
+        # intro = model.MicroLexicalization(intro)
+
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+
         # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), html.P(intro), dash_table.DataTable(data[aim].to_dict('records'),
+        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]), dash_table.DataTable(data[aim].to_dict('records'),
                                                                                       [{"name": i, "id": i} for i in
                                                                                        data[aim].columns],
                                                                                       style_table={'height': '400px',
@@ -702,56 +752,123 @@ class DocumentplanningandDashboard:
         dash_tab_add(listTabs, 'RandomForestModelStats', children)
 
         aim.remove(ycol)
-        question2 = DecisionTreeQuestion.render(q=2)
-        tree_explain_story = explain
-        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)),
-                    html.P(question2), html.Br(), html.Pre(tree_explain_story)]
-        dash_tab_add(listTabs, 'Tree Explanation', children)
 
-        summary = DecisionTree3.render(imp=imp, ycol=ycol, r2=round(r2, 3), qs=questionset, mse=mse)
+        text1 = RFA2_1.render(imp=imp)
+        text2=RFA2_2.render(imp=imp,lessimp=lessimp)
+        feature_importances = rf_small.feature_importances_
+        importance_df = pd.DataFrame({'Feature': Xcol, 'Importance': feature_importances})
+        importance_df = importance_df.sort_values(by='Importance', ascending=False).reset_index(drop=True)
+        sorted_Xcol = importance_df['Feature'].tolist()
+        text3=RFA2_3.render(sorted_Xcol=sorted_Xcol)
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+
         question3 = DecisionTreeQuestion.render(q=3)
-        children = [dcc.Graph(figure=fig), html.P(question3), html.Br(), html.P(summary)]
-        dash_tab_add(listTabs, 'Summary', children)
+
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[0])), html.P(question3), html.Br(),
+                    dcc.Tabs([subtab1, subtab2, subtab3])]
+        dash_tab_add(listTabs, 'Feature Importances', children)
+
+        question4 = DecisionTreeQuestion.render(q=4)
+        text1 = CVR2evaluatemodel.render(cv_r2_mean=cv_r2_mean, train_r2=train_r2,diff=abs(train_r2 - cv_r2_mean))
+        text2 = text1 +'\n'+ R2evaluatemodel.render(train_r2=train_r2,test_r2=test_r2,diff=abs(train_r2 - test_r2))
+        text3 = text2 +'\n'+ MAEevaluatemodel.render(train_mae=train_mae,test_mae=test_mae,diff=abs(train_mae - test_mae))
+
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[1])), html.P(question4), html.Br(),
+                    dcc.Tabs([subtab1, subtab2, subtab3]) ]
+        dash_tab_add(listTabs, 'Model Fitting', children)
 
         run_app(RF_app, listTabs, portnum)
 
-    def DecisionTreeRegressionModelStats_view(self,data, Xcol, ycol, DTData, DTmodel, r2, mse, questionset, portnum=8050):
+    def DecisionTreeRegressionModelStats_view(self, data, Xcol, ycol, DTData, DTmodel, r2, mse, mae, mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, questionset,
+                                              portnum=8050):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         # Importance score Figure
-        if not os.path.exists('pictures'):
-            os.makedirs('pictures')
         imp = ""
-        fig = px.bar(DTData)
+        plt.bar(Xcol, DTmodel.feature_importances_)
+
+        plt.title("Importance Score")
+        plt.savefig('pictures/{}.png'.format("DT1"))
+        plt.clf()
+
+        _base64 = []
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("DT1"), 'rb').read()).decode('ascii'))
+
+        plt.plot(cv_r2_scores, label='Cross-Validation R²')
+        plt.axhline(y=cv_r2_mean, color='r', linestyle='--', label='Mean Cross-Validation R²')
+        plt.xlabel('Fold')
+        plt.ylabel('R²')
+        plt.title('Cross-Validation R² Scores')
+        plt.legend()
+        plt.savefig('pictures/{}.png'.format("DT2"))
+        plt.clf()
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("DT2"), 'rb').read()).decode('ascii'))
+
+        imp ,lessimp= "",""
         for ind in DTData.index:
             if DTData['important'][ind] == max(DTData['important']):
                 imp = ind
-
+            elif DTData['important'][ind] == min(DTData['important']):
+                lessimp = ind
         DT_app, listTabs = start_app()
 
         # Add to dashbord Model Statistics
         question1 = DecisionTreeQuestion.render(q=1, m="dt")
-        intro = DecisionTree2.render(r2=r2, qs=questionset, indeNum=np.size(Xcol), modelName="Decision Tree", Xcol=Xcol,
-                                     ycol=ycol, )
-        # intro = MicroLexicalization(intro)
+        text1 = DTA1_1.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol)
+        rmse = mse ** (1 / 2.0)
+        text2 = DTA1_2.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape)
+        text3 = DTA1_3.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape, mse=mse, rmse=rmse, mae=mae)
+        # micro planning
+        # intro = model.MicroLexicalization(intro)
+
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), html.P(intro),
+        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
                     dash_table.DataTable(data[aim].to_dict('records'),
                                          [{"name": i, "id": i} for i in data[aim].columns],
                                          style_table={'height': '400px', 'overflowY': 'auto'})]
         dash_tab_add(listTabs, 'DecisionTreeModelStats', children)
         aim.remove(ycol)
 
-        # Figure of the tree
-        fig2, axes = plt.subplots()
+        text1 = DTA2_1.render(imp=imp)
+        text2 = DTA2_2.render(imp=imp, lessimp=lessimp)
+        feature_importances = DTmodel.feature_importances_
+        importance_df = pd.DataFrame({'Feature': Xcol, 'Importance': feature_importances})
+        importance_df = importance_df.sort_values(by='Importance', ascending=False).reset_index(drop=True)
+        sorted_Xcol = importance_df['Feature'].tolist()
+        text3 = DTA2_3.render(sorted_Xcol=sorted_Xcol)
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
 
+        question3 = DecisionTreeQuestion.render(q=3)
+
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[0])), html.P(question3), html.Br(),
+                    dcc.Tabs([subtab1, subtab2, subtab3])]
+        dash_tab_add(listTabs, 'Feature Importances', children)
+
+        question4 = DecisionTreeQuestion.render(q=4)
+        text1 = CVR2evaluatemodel.render(cv_r2_mean=cv_r2_mean, train_r2=train_r2, diff=abs(train_r2 - cv_r2_mean))
+        text2 = text1 + '\n' + R2evaluatemodel.render(train_r2=train_r2, test_r2=test_r2, diff=abs(train_r2 - test_r2))
+        text3 = text2 + '\n' + MAEevaluatemodel.render(train_mae=train_mae, test_mae=test_mae,
+                                                       diff=abs(train_mae - test_mae))
+
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[1])), html.P(question4), html.Br(),
+                    dcc.Tabs([subtab1, subtab2, subtab3])]
+        dash_tab_add(listTabs, 'Model Fitting', children)
+
+        # Figure of the tree
+        fig2, ax = plt.subplots(figsize=(20, 10), dpi=200)
         tree.plot_tree(DTmodel,
                        feature_names=Xcol,
                        class_names=ycol,
                        filled=True,
                        node_ids=True);
         fig2.savefig('pictures/{}.png'.format("DT"))
+        plt.clf()
         encoded_image = base64.b64encode(open("pictures/DT.png", 'rb').read()).decode('ascii')
 
         # # Explain of the tree
@@ -763,15 +880,11 @@ class DocumentplanningandDashboard:
                     html.P(question2), html.Br(), html.Pre(tree_explain_story)]
         dash_tab_add(listTabs, 'Tree Explanation', children)
 
-        summary = DecisionTree3.render(imp=imp, ycol=ycol, r2=round(r2, 3), qs=questionset, mse=mse)
-        question3 = DecisionTreeQuestion.render(q=3)
-        children = [dcc.Graph(figure=fig), html.P(question3), html.Br(), html.P(summary)]
-        dash_tab_add(listTabs, 'Summary', children)
 
         run_app(DT_app, listTabs, portnum)
 
-
-    def piecewise_linear_view(self,data, Xcol, ycol,model, slopes, segment_points, segment_values, max_slope_info,breaks,portnum):
+    def piecewise_linear_view(self, data, Xcol, ycol, model, slopes, segment_points, segment_values, max_slope_info,
+                              breaks, segment_r2_values,mse,mae,bic,aic,portnum):
 
         x_hat = np.linspace(data[Xcol].min(), data[Xcol].max(), 100)
         y_hat = model.predict(x_hat)
@@ -783,12 +896,29 @@ class DocumentplanningandDashboard:
         plt.xlabel(Xcol)
         plt.ylabel(ycol)
         plt.legend()
+        plt.title('Piecewise Linear Fit')
         plt.savefig('pictures/piecewise_linear_fit.png')
         encoded_image = base64.b64encode(open("pictures/piecewise_linear_fit.png", 'rb').read()).decode('ascii')
-
         r2 = model.r_squared()
 
+        plt.clf()
+        sns.scatterplot(x=Xcol, y=ycol, data=data)
+        for i in range(len(breaks) - 1):
+            start, end = breaks[i], breaks[i + 1]
+            x_segment = np.linspace(start, end, 100)
+            y_segment = model.predict(x_segment)
+            plt.plot(x_segment, y_segment, label=f'Segment {i + 1}', linestyle='--')
+
+        plt.xlabel(Xcol)
+        plt.ylabel(ycol)
+        plt.legend()
+        plt.title('Piecewise Linear Fit with Individual Segments')
+        plt.savefig('pictures/piecewise_linear_fit_with_segments.png')
+        plt.clf()
+        encoded_image2 = base64.b64encode(open("pictures/piecewise_linear_fit_with_segments.png", 'rb').read()).decode('ascii')
+
         piecewise_app, listTabs = start_app()
+
         def merge_segments(breaks, slopes):
             merged_breaks = [breaks[0]]
             merged_slopes = []
@@ -809,47 +939,48 @@ class DocumentplanningandDashboard:
             return merged_breaks, output_slopes
 
         merged_breaks, output_slopes = merge_segments(breaks, slopes)
-        # print("Merged Breaks:", merged_breaks)
-        # print("Output Slopes:", output_slopes)
-        # print(summary)
 
-        question=piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=4)
-        summary=piecewiseSummary4.render(xcol=Xcol, ycol=ycol,merged_breaks=merged_breaks, output_slopes=output_slopes,startPoint=max_slope_info['start_end_points'][0],endPoint=max_slope_info['start_end_points'][1],slope=max_slope_info['slope'])
+        question = piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=4)
+        summary = piecewiseSummary4.render(xcol=Xcol, ycol=ycol, merged_breaks=merged_breaks,
+                                           output_slopes=output_slopes,
+                                           startPoint=max_slope_info['start_end_points'][0],
+                                           endPoint=max_slope_info['start_end_points'][1],
+                                           slope=max_slope_info['slope'])
 
-        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)),html.P(question), html.Br(), html.P(summary)]
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)), html.P(question), html.Br(),
+                    html.P(summary)]
         dash_tab_add(listTabs, 'Overview', children)
 
-        # Add to dashbord Linear Model Statistics
-        question = piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=1)
-        intro = piecewiseSummary.render(r2=r2, modelName="Piecewise Linear Model")
-        # intro = MicroLexicalization(intro)
-
-        # aim = Xcol
-        # aim.insert(0, ycol)
-
-        children = [html.P(question), html.Br(), html.P(intro)]
-        dash_tab_add(listTabs, 'PiecewiseStats', children)
-        # aim.remove(ycol)
-
-
         question = piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=2)
-        summary=""
-
+        summary = ""
         for i in range(len(slopes)):
+            summary = summary + piecewiseSummary2.render(startPoint=segment_points[i][0], endPoint=segment_points[i][1],
+                                                         slope=slopes[i]) + "\n"
+        text2=piecewiseSummary5.render(breaks=breaks)+summary
 
-            summary = summary+piecewiseSummary2.render(startPoint=segment_points[i][0],endPoint=segment_points[i][1],slope=slopes[i])+"\n"
+        subtab1,subtab2=TwoSubtab(summary, text2)
 
-        children = [html.P(question), html.Br(), html.P(summary)]
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image2)), html.P(question), html.Br(), dcc.Tabs([subtab1, subtab2])]
         dash_tab_add(listTabs, 'Slopes', children)
 
-        print(breaks)
-        print(slopes)
-        # print(segment_values)
-        # print(max_slope_info)
-        question = piecewiseQuestion.render(xcol="", ycol=ycol, section=3)
-        summary = piecewiseSummary3.render(xcol=Xcol, ycol=ycol,startPoint=max_slope_info['start_end_points'][0],endPoint=max_slope_info['start_end_points'][1],slope=max_slope_info['slope'],yValue1=max_slope_info['start_end_values'][0],yValue2=max_slope_info['start_end_values'][1])
+        question = piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=1)
+        text1 = piecewiseSummary.render(r2=r2, modelName="Piecewise Linear Model")
+        rmse = mse ** (1 / 2.0)
+        text2 =text1 + piecewiseSummary7.render(AIC=aic,BIC=bic)
+        text3= text2 + piecewiseSummary6.render(mse=mse,rmse=rmse,mae=mae)
 
-        children = [ html.P(question), html.Br(), html.P(summary)]
+        subtab1, subtab2,subtab3 = ThreeSubtab(text1, text2,text3)
+
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)), html.P(question), html.Br(), dcc.Tabs([subtab1, subtab2,subtab3])]
+        dash_tab_add(listTabs, 'Model Information', children)
+
+        question = piecewiseQuestion.render(xcol="", ycol=ycol, section=3)
+        summary = piecewiseSummary3.render(xcol=Xcol, ycol=ycol, startPoint=max_slope_info['start_end_points'][0],
+                                           endPoint=max_slope_info['start_end_points'][1],
+                                           slope=max_slope_info['slope'], yValue1=max_slope_info['start_end_values'][0],
+                                           yValue2=max_slope_info['start_end_values'][1])
+
+        children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image2)), html.P(question), html.Br(), html.P(summary)]
         dash_tab_add(listTabs, 'Summary', children)
 
         run_app(piecewise_app, listTabs, portnum)
