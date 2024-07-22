@@ -70,10 +70,10 @@ class general_datastory_pipeline:
     def RidgeClassifierFit(self, data, Xcol, ycol, class1, class2, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, importances, confusionmatrix, cv_scores = DC.ModelFitting().RidgeClassifierModel(
+        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy,precision,recall,f1, importances, confusionmatrix, cv_scores = DC.ModelFitting().RidgeClassifierModel(
             data, Xcol, ycol, class1, class2)
         NC.DocumentplanningandDashboard().RidgeClassifier_view(data, Xcol, ycol, rclf, pca, y_test, y_prob, roc_auc,
-                                                               X_pca, accuracy, importances, class1, class2,
+                                                               X_pca, accuracy,precision,recall,f1, importances, class1, class2,
                                                                confusionmatrix, cv_scores)
 
     def KNeighborsClassifierFit(self, data, Xcol, ycol, Xnewname="", ynewname="", Knum=3, cvnum=5):
@@ -88,19 +88,20 @@ class general_datastory_pipeline:
     def SVMClassifierFit(self, data, Xcol, ycol, Xnewname="", ynewname="", kernel='linear', C=1.0, cvnum=5):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        accuracy, precision, recall, f1, confusionmatrix, cv_scores = DC.ModelFitting().SVCClassifierModel(data, Xcol,
+        accuracy, precision, recall, f1, confusionmatrix, cv_scores,classes,total_influence,most_influential_feature,coefficients = DC.ModelFitting().SVCClassifierModel(data, Xcol,
                                                                                                            ycol,
                                                                                                            kernel=kernel,
                                                                                                            C=C,
                                                                                                            cvnum=cvnum)
         NC.DocumentplanningandDashboard().SVCClassifier_view(data, Xcol, ycol, accuracy, precision, recall, f1,
-                                                             confusionmatrix, cv_scores)
+                                                             confusionmatrix, cv_scores,classes,total_influence,most_influential_feature,coefficients)
+
 
 class casestudy_datastory_pipeline:
     def CPpiecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks = DC.ModelFitting().piecewise_linear_fit(
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,segment_r2_values,mse,mae,bic,aic = DC.ModelFitting().piecewise_linear_fit(
             data, Xcol, ycol, num_breaks)
         last_X,last_X2,last_y,difference,percentage_change,max_value,max_y_X=DC.DataDescription().general_description(data, Xcol, ycol)
         summary=NC.DocumentplanningNoDashboard().CP_general_description(ycol,last_X,last_X2,last_y,difference,percentage_change,max_value,max_y_X)
@@ -110,7 +111,7 @@ class casestudy_datastory_pipeline:
     def DRDpiecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks = DC.ModelFitting().piecewise_linear_fit(
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,segment_r2_values,mse,mae,bic,aic = DC.ModelFitting().piecewise_linear_fit(
             data, Xcol, ycol, num_breaks)
         summary=NC.DocumentplanningNoDashboard().DRD_piecewise_linear(data, Xcol, ycol,my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks)
         print(summary)

@@ -1,0 +1,12 @@
+Recall is the ratio of true positive predictions to the total actual positives, measuring the ability of the model to identify all relevant instances. The recall of this model is {{ recall | round(2) }}, so
+{%- if recall < 0.5 %}
+ the model has poor recall, indicating a high number of false negatives.
+{%- elif recall < 0.7 %}
+ the model's recall is acceptable, but there's room for improvement.
+{%- elif recall < 0.8 %}
+ the model has moderately good recall.
+{%- elif recall < 0.9 %}
+ the model's recall is good.
+{%- else %}
+ the model has excellent recall, indicating very few false negatives.
+{%- endif %} 

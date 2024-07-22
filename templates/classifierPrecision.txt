@@ -1,0 +1,14 @@
+Precision is the ratio of true positive predictions to the total predicted positives, measuring the accuracy of the positive predictions. The precision of this model is {{ precision | round(2) }}, so
+{%- if precision < 0.5 %}
+ the model has a poor precision, indicating a high number of false positives.
+{%- elif precision < 0.7 %}
+ the model's precision is acceptable, but there's room for improvement.
+{%- elif precision < 0.8 %}
+ the model has a moderately good precision.
+{%- elif precision < 0.9 %}
+ the model's precision is good.
+{%- else %}
+ the model has an excellent precision, indicating very few false positives.
+{%- endif %} 
+
+

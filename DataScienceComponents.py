@@ -9,7 +9,7 @@ from sklearn import preprocessing
 from sklearn import ensemble
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor,RandomForestClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -332,8 +332,7 @@ class ModelFitting:
 
         return my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,segment_r2_values,mse,mae,bic,aic
 
-
-    def RidgeClassifierModel(self,dataset, Xcol, ycol,class1,class2,cvnum=5):
+    def RidgeClassifierModel(self, dataset, Xcol, ycol, class1, class2, cvnum=5):
         X = dataset[Xcol]
         y = dataset[ycol]
         y = y.map({class1: 0, class2: 1})
@@ -365,10 +364,11 @@ class ModelFitting:
         # Compute feature importances
         importances = rclf.coef_[0]
         cv_scores = cross_val_score(rclf, X, y, cv=cvnum)
-        return (rclf,pca,y_test, y_prob,roc_auc,X_pca,accuracy,importances,confusionmatrix,cv_scores)
+        return (
+        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision, recall, f1, importances, confusionmatrix,
+        cv_scores)
 
-
-    def KNeighborsClassifierModel(self,dataset, Xcol, ycol,Knum=3,cvnum=5):
+    def KNeighborsClassifierModel(self, dataset, Xcol, ycol, Knum=3, cvnum=5):
         # Extract the feature matrix X and target vector y
         X = dataset[Xcol]
         y = dataset[ycol]
@@ -392,9 +392,9 @@ class ModelFitting:
         confusionmatrix = confusion_matrix(y_test, y_pred)
         # Calculate cross-validation scores
         cv_scores = cross_val_score(clf, X, y, cv=cvnum)
-        return (accuracy,precision,feature_importances,recall,f1,confusionmatrix,cv_scores)
+        return (accuracy, precision, feature_importances, recall, f1, confusionmatrix, cv_scores)
 
-    def SVCClassifierModel(self,dataset, Xcol, ycol,kernel='linear', C=1.0,cvnum=5):
+    def SVCClassifierModel(self, dataset, Xcol, ycol, kernel='linear', C=1.0, cvnum=5):
         # Extract the feature matrix X and target vector y
         X = dataset[Xcol]
         y = dataset[ycol]
@@ -414,7 +414,67 @@ class ModelFitting:
         # Calculate confusion matrix
         confusionmatrix = confusion_matrix(y_test, y_pred)
         cv_scores = cross_val_score(clf, X, y, cv=cvnum)  # 5-fold cross-validation
-        return (accuracy,precision,recall,f1,confusionmatrix,cv_scores)
+        coefficients = clf.coef_
+        classes = clf.classes_
+        total_influence = np.mean(np.abs(coefficients), axis=0)
+        most_influential_feature_idx = np.argmax(total_influence)
+        most_influential_feature = Xcol[most_influential_feature_idx]
+
+        return (
+        accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes, total_influence, most_influential_feature,
+        coefficients)
+
+    def DecisionTreeClassifierModel(self, dataset, Xcol, ycol, cvnum=5):
+        # Extract the feature matrix X and target vector y
+        X = dataset[Xcol]
+        y = dataset[ycol]
+        # Split the data into train and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Instantiate the Decision Tree Classifier model
+        clf = DecisionTreeClassifier(random_state=42)
+        # Fit the model to the training data
+        clf.fit(X_train, y_train)
+        # Make predictions on the test data
+        y_pred = clf.predict(X_test)
+        # Compute accuracy, precision, recall, F1-score
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='weighted')
+        recall = recall_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='weighted')
+        # Calculate mutual information between each feature and the target variable
+        feature_importances = clf.feature_importances_
+        # Calculate confusion matrix
+        confusionmatrix = confusion_matrix(y_test, y_pred)
+        # Calculate cross-validation scores
+        cv_scores = cross_val_score(clf, X, y, cv=cvnum)
+
+        return (accuracy, precision, feature_importances, recall, f1, confusionmatrix, cv_scores)
+
+    def RandomForestClassifierModel(self, dataset, Xcol, ycol, n_estimators=100, cvnum=5):
+        # Extract the feature matrix X and target vector y
+        X = dataset[Xcol]
+        y = dataset[ycol]
+        # Split the data into train and test sets
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Instantiate the Random Forest Classifier model
+        clf = RandomForestClassifier(n_estimators=n_estimators, random_state=42)
+        # Fit the model to the training data
+        clf.fit(X_train, y_train)
+        # Make predictions on the test data
+        y_pred = clf.predict(X_test)
+        # Compute accuracy, precision, recall, F1-score
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='weighted')
+        recall = recall_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='weighted')
+        # Calculate feature importances
+        feature_importances = clf.feature_importances_
+        # Calculate confusion matrix
+        confusionmatrix = confusion_matrix(y_test, y_pred)
+        # Calculate cross-validation scores
+        cv_scores = cross_val_score(clf, X, y, cv=cvnum)
+
+        return (accuracy, precision, feature_importances, recall, f1, confusionmatrix, cv_scores)
 
     def kmeanclustermodel(self,X, Xcol, df_agg, minnum_clusters=1, maxnum_clusters=11, n_clusters=5):
         # Select features for segmentation

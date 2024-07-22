@@ -1,0 +1,45 @@
+Please refer to the figure above which displays accuracy, precision, recall, and F1 score. 
+Accuracy measures the overall correctness of predictions, Precision focuses on the correctness of positive predictions, Recall assesses the ability to capture all actual positives, and the F1 Score balances Precision and Recall into a single metric.
+{% if accuracy < 0.5 %}
+The accuracy indicates that the model is performing no better than random guessing.
+{% elif accuracy < 0.7 %}
+The accuracy indicates that the model performed better than random guessing, but only acceptable.
+{% elif accuracy < 0.8 %}
+The accuracy indicates that the model is moderately good.
+{% elif accuracy < 0.9 %}
+The accuracy indicates that the model is good.
+{% else %}
+The accuracy indicates that the model is excellent.
+{% endif %}
+{% if precision < 0.5 %}
+The precision indicates a poor ability to correctly predict positive instances, with a high number of false positives.
+{% elif precision < 0.7 %}
+The precision indicates an acceptable performance, but there is room for improvement.
+{% elif precision < 0.8 %}
+The precision indicates a moderately good performance.
+{% elif precision < 0.9 %}
+The precision indicates a good performance.
+{% else %}
+The precision indicates an excellent performance, with very few false positives.
+{% endif %}
+{% if recall < 0.5 %}
+The recall indicates a poor ability to capture all actual positive instances, with a high number of false negatives.
+{% elif recall < 0.7 %}
+The recall indicates an acceptable performance, but there is room for improvement.
+{% elif recall < 0.8 %}
+The recall indicates a moderately good performance.
+{% elif recall < 0.9 %}
+The recall indicates a good performance.
+{% else %}
+The recall indicates an excellent performance, capturing almost all positive instances.
+{% endif %}
+{% if f1 < 0.5 %}
+The F1 score indicates the poor performance of the classifier.
+{% elif f1 < 0.8 %}
+The F1 score indicates that the classifier's performance is moderate.
+{% elif f1 < 0.9 %}
+The F1 score indicates that the classifier's performance is good.
+{% else %}
+The F1 score indicates that the classifier's performance is excellent.
+{% endif %}
+

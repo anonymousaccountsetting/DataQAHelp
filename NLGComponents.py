@@ -109,7 +109,11 @@ LogA3_3 = env.get_template('LogA3-3.txt')
 classifieraccuracy = env.get_template('classifierAccuracy.txt')
 classifierauc = env.get_template('classifierAUC.txt')
 classifiercv = env.get_template('classifierCvscore.txt')
-classifierf1 = env.get_template('classifierF1score.txt')
+classifierEvaluation=env.get_template('classifierEvaluation.txt')
+classifierf1 = env.get_template('classifierF1.txt')
+classifierprecision = env.get_template('classifierPrecision.txt')
+classifierrecall = env.get_template('classifierRecall.txt')
+classifiercoeff=   env.get_template('classifierCoeff.txt')
 classifierimp = env.get_template('classifierImportant.txt')
 ridgequestionset = env.get_template('ridgeQuestionset.txt')
 ridgedecision = env.get_template('ridgeDecision.txt')
@@ -120,6 +124,7 @@ clusterBestnum = env.get_template('clusterWSSS.txt')
 clusterDaCa = env.get_template('clusterDaviesCalinski.txt')
 clusterSil = env.get_template('clusterSilhouette.txt')
 clusterGroup = env.get_template('clusterGroup.txt')
+
 # For some basic function
 basicdescription = env.get_template('basicdescription.txt')
 simpletrend = env.get_template('simpletrend.txt')
@@ -985,8 +990,10 @@ class DocumentplanningandDashboard:
 
         run_app(piecewise_app, listTabs, portnum)
 
-    def RidgeClassifier_view(self,data, Xcol, ycol, rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, importances, class1,
-                             class2,confusionmatrix,cv_scores):
+    def RidgeClassifier_view(self, data, Xcol, ycol, rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision,
+                             recall, f1, importances,
+                             class1,
+                             class2, confusionmatrix, cv_scores):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         _base64 = []
@@ -1061,15 +1068,22 @@ class DocumentplanningandDashboard:
             equation += '({:.4f} * {}) + '.format(coefs[i], Xcol[i])
         equation += '{:.4f}'.format(intercept)
 
-        intro = classifieraccuracy.render(accuracy=round(accuracy, 3), classifiername="ridge classifier")
+        text1 = classifieraccuracy.render(accuracy=round(accuracy, 3), classifiername="ridge classifier")
+        text2 = text1 + classifierprecision.render(precision=precision)
+        text3 = text2 + classifierrecall.render(recall=recall) + classifierf1.render(f1=f1)
+
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        # dcc.Tabs([subtab1, subtab2, subtab3])
+
         question = ridgequestionset.render(section=1)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question), html.Br(), html.P(intro), dash_table.DataTable(data[aim].to_dict('records'),
-                                                                                     [{"name": i, "id": i} for i in
-                                                                                      data[aim].columns],
-                                                                                     style_table={'height': '400px',
-                                                                                                  'overflowY': 'auto'})]
+        children = [html.P(question), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'})]
 
         dash_tab_add(listTabs, 'RidgeClassifierStats', children)
         aim.remove(ycol)
@@ -1100,7 +1114,7 @@ class DocumentplanningandDashboard:
 
         run_app(ridge_app, listTabs)
 
-    def KNeighborsClassifier_view(self,data, Xcol, ycol, accuracy, precision, feature_importances, recall, f1,
+    def KNeighborsClassifier_view(self, data, Xcol, ycol, accuracy, precision, feature_importances, recall, f1,
                                   confusionmatrix, cv_scores):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
@@ -1109,7 +1123,6 @@ class DocumentplanningandDashboard:
         # Print feature importances with column names
         for i in range(len(feature_importances)):
             if abs(feature_importances[i]) == max(abs(feature_importances)):
-                print("Feature {}: {} - {:.2f}".format(i + 1, Xcol[i], feature_importances[i]))
                 imp = Xcol[i]
 
         # Create a dictionary to store the evaluation metrics
@@ -1140,20 +1153,26 @@ class DocumentplanningandDashboard:
         plt.clf()
 
         question = classifierquestionset.render(section=1)
-        intro = classifieraccuracy.render(accuracy=round(accuracy, 3), classifiername="K neighbors classifier")
+        text1 = classifieraccuracy.render(accuracy=round(accuracy, 3), classifiername="ridge classifier")
+        text2 = text1 + classifierprecision.render(precision=precision)
+        text3 = text2 + classifierrecall.render(recall=recall) + classifierf1.render(f1=f1)
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        # dcc.Tabs([subtab1, subtab2, subtab3])
+
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question), html.Br(), html.P(intro), dash_table.DataTable(data[aim].to_dict('records'),
-                                                                                     [{"name": i, "id": i} for i in
-                                                                                      data[aim].columns],
-                                                                                     style_table={'height': '400px',
-                                                                                                  'overflowY': 'auto'})]
+        children = [html.P(question), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'})]
 
         dash_tab_add(listTabs, 'KNeighborsClassifierStats', children)
         aim.remove(ycol)
 
         question = classifierquestionset.render(section=2)
-        modelStory = classifierf1.render(f1=round(f1, 3))
+        modelStory = classifierEvaluation.render(f1=round(f1, 3), accuracy=accuracy, precision=precision, recall=recall)
         children = [html.Img(src='data:image/png;base64,{}'.format(_base64[0])), html.P(question), html.Br(),
                     html.P(modelStory)]
         dash_tab_add(listTabs, "Model Evaluation Metrics", children)
@@ -1172,12 +1191,12 @@ class DocumentplanningandDashboard:
 
         run_app(KNei_app, listTabs)
 
-    def SVCClassifier_view(self,data, Xcol, ycol, accuracy, precision, recall, f1, confusionmatrix, cv_scores):
-        if not os.path.exists('pictures'):
-            os.makedirs('pictures')
+    def SVCClassifier_view(self, data, Xcol, ycol, accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes,
+                           total_influence, most_influential_feature, coefficients):
         _base64 = []
         svm_app, listTabs = start_app()
-
+        if not os.path.exists('pictures'):
+            os.makedirs('pictures')
         # Create a dictionary to store the evaluation metrics
         metrics = {"Accuracy": accuracy, "Precision": precision, "Recall": recall, "F1-score": f1}
         # Plot the evaluation metrics
@@ -1198,20 +1217,24 @@ class DocumentplanningandDashboard:
         plt.clf()
 
         question = classifierquestionset.render(section=1)
-        intro = classifieraccuracy.render(accuracy=round(accuracy, 3), classifiername="Support Vector Machine model")
+        text1 = classifieraccuracy.render(accuracy=round(accuracy, 3), classifiername="ridge classifier")
+        text2 = text1 + classifierprecision.render(precision=precision)
+        text3 = text2 + classifierrecall.render(recall=recall) + classifierf1.render(f1=f1)
+        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question), html.Br(), html.P(intro), dash_table.DataTable(data[aim].to_dict('records'),
-                                                                                     [{"name": i, "id": i} for i in
-                                                                                      data[aim].columns],
-                                                                                     style_table={'height': '400px',
-                                                                                                  'overflowY': 'auto'})]
-
+        children = [html.P(question), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'})]
         dash_tab_add(listTabs, 'SupportVectorMachineModelStats', children)
         aim.remove(ycol)
 
         question = classifierquestionset.render(section=2)
-        modelStory = classifierf1.render(f1=round(f1, 3))
+        modelStory = classifierEvaluation.render(f1=round(f1, 3), accuracy=accuracy, precision=precision, recall=recall)
         children = [html.Img(src='data:image/png;base64,{}'.format(_base64[0])), html.P(question), html.Br(),
                     html.P(modelStory)]
         dash_tab_add(listTabs, "Model Evaluation Metrics", children)
@@ -1221,6 +1244,14 @@ class DocumentplanningandDashboard:
         children = [html.Img(src='data:image/png;base64,{}'.format(_base64[1])), html.P(question), html.Br(),
                     html.P(crossvalidStory)]
         dash_tab_add(listTabs, "Confusion Matrix and Cross-validation", children)
+
+        question = classifierquestionset.render(section=5)
+        coeffstory = classifiercoeff.render(classes=classes, Xcol=Xcol, coefficients=coefficients,
+                                            total_influence=total_influence,
+                                            most_influential_feature=most_influential_feature, enumerate=enumerate)
+        children = [html.P(question), html.Br(),
+                    html.P(coeffstory)]
+        dash_tab_add(listTabs, "Feature Coefficients ", children)
 
         run_app(svm_app, listTabs)
 

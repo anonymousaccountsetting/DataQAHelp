@@ -1,0 +1,13 @@
+F1 Score is the harmonic mean of precision and recall, providing a single metric that balances both precision and recall. The F1 score is {{ f1  | round(2)}}, so
+{%- if f1 < 0.5 %}
+ the model has a poor F1 score, indicating a high number of false positives and/or false negatives.
+{%- elif f1 < 0.7 %}
+ the model's F1 score is acceptable, but there's room for improvement.
+{%- elif f1 < 0.8 %}
+ the model has a moderately good F1 score.
+{%- elif f1 < 0.9 %}
+ the model's F1 score is good.
+{%- else %}
+ the model has an excellent F1 score, indicating very few false positives and false negatives.
+{%- endif %}
+
