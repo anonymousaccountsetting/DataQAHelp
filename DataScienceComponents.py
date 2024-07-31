@@ -1,35 +1,36 @@
 import numpy as np
 import pandas as pd
+from pycaret import classification
+from pycaret import regression
 from pandas import DataFrame
-from itertools import islice
 import pwlf
-from sklearn.neighbors import LocalOutlierFactor
-from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import LocalOutlierFactor, KNeighborsRegressor
 from sklearn import preprocessing
 from sklearn import ensemble
-from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor,RandomForestClassifier
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, AdaBoostRegressor
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge, Lasso, ElasticNet, Lars
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn import metrics
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import RidgeClassifier
 from sklearn.decomposition import PCA
-from sklearn.metrics import r2_score,mean_squared_error, mean_absolute_error,silhouette_score, calinski_harabasz_score, davies_bouldin_score,accuracy_score,accuracy_score, confusion_matrix,precision_score, recall_score, f1_score, roc_auc_score, roc_curve
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, silhouette_score, \
+    calinski_harabasz_score, davies_bouldin_score, accuracy_score, accuracy_score, confusion_matrix, precision_score, \
+    recall_score, f1_score, roc_auc_score, roc_curve
 from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_selection import mutual_info_classif
 import statsmodels.api as sm
-from pycaret import classification
-from pycaret import regression
 import cv2
 import statistics
 import heapq
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from itertools import islice
+
 
 def evaluate_model(model, X_train, X_test, y_train, y_test):
     y_train_pred = model.predict(X_train)
@@ -45,6 +46,7 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
 
     return train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean
 
+
 class DataEngineering:
     def NormalizeData(self, dataset):
         """
@@ -56,7 +58,7 @@ class DataEngineering:
         data = pd.DataFrame(scaled_x, columns=dataset.columns)
         return data
 
-    def CleanData(self, dataset,threshold=0.8):
+    def CleanData(self, dataset, threshold=0.8):
         """This function takes in as input a dataset, and returns a clean dataset.
 
         :param data: This is the dataset that will be cleaned.
@@ -71,15 +73,15 @@ class DataEngineering:
             data[[i]] = imputer.transform(data[[i]])
         return data
 
-    def fill_missing_with_frequently_values(self,data,colname):
+    def fill_missing_with_frequently_values(self, data, colname):
         data[colname].fillna(data[colname].value_counts().index[0], inplace=True)
         return (data)
 
-    def fill_missing_with_mean(self,data,colname):
+    def fill_missing_with_mean(self, data, colname):
         data[colname] = data[colname].fillna(data[colname].mean())
         return (data)
 
-    def create_dummy_variables(self,dataset, variables):
+    def create_dummy_variables(self, dataset, variables):
         for var in variables:
             cat_list = 'var' + '_' + var
             cat_list = pd.get_dummies(dataset[var], prefix=var)
@@ -90,15 +92,14 @@ class DataEngineering:
         data = dataset[to_keep]
         return (data)
 
-
-    def calculate_vif(self,data, Xcol):
+    def calculate_vif(self, data, Xcol):
         X = data[Xcol]
         vif_data = pd.DataFrame()
         vif_data["feature"] = X.columns
         vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
         return vif_data
 
-    def mean_absolute_percentage_error(self,y_true, y_pred):
+    def mean_absolute_percentage_error(self, y_true, y_pred):
 
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
@@ -110,21 +111,22 @@ class DataEngineering:
         mape = np.mean(np.abs((y_true - y_pred) / y_true))
         return mape
 
-    def MseRmseMae(self,y_true, y_pred):
+    def MseRmseMae(self, y_true, y_pred):
         mse = mean_squared_error(y_true, y_pred)
         rmse = np.sqrt(mse)
         mae = mean_absolute_error(y_true, y_pred)
-        return (mse,rmse,mae)
+        return (mse, rmse, mae)
 
-    def set_values_to_0_and_1(self,data,colname,valuesShouldBeZero):
+    def set_values_to_0_and_1(self, data, colname, valuesShouldBeZero):
         data[colname] = data[colname].apply(
             lambda x: 0 if x in valuesShouldBeZero else 1)
         return (data)
 
-    def set_date_columns_to_datetime(self,data,colname):
+    def set_date_columns_to_datetime(self, data, colname):
         data[colname] = data[colname].apply(pd.to_datetime)
         return (data)
-    def remove_outliers(self,dataset, Xcol, ycol, testsize=0.33):
+
+    def remove_outliers(self, dataset, Xcol, ycol, testsize=0.33):
         X = dataset[Xcol].values
         y = dataset[ycol].values
         # split into train and test sets
@@ -142,7 +144,7 @@ class DataEngineering:
 
 
 class ModelFitting:
-    def LinearSKDefaultModel(self,data, Xcol,ycol):
+    def LinearSKDefaultModel(self, data, Xcol, ycol):
         # use sm for P-values
         X = data[Xcol].values
         y = data[ycol]
@@ -160,26 +162,25 @@ class ModelFitting:
         linearData = DataFrame(data=columns, index=Xcol)
         # calculate the r-squared value
         y_pred = model.predict(X)
-        mape=DataEngineering().mean_absolute_percentage_error(y_test, y_pred)
+        mape = DataEngineering().mean_absolute_percentage_error(y_test, y_pred)
         r2 = r2_score(y, y_pred)
-        mse,rmse,mae=DataEngineering().MseRmseMae(y_test, y_pred)
-        vif=DataEngineering().calculate_vif(data,Xcol)
-        return (linearData, r2,mape,mse,rmse,mae,vif)
+        mse, rmse, mae = DataEngineering().MseRmseMae(y_test, y_pred)
+        vif = DataEngineering().calculate_vif(data, Xcol)
+        return (linearData, r2, mape, mse, rmse, mae, vif)
 
-    def LinearDefaultModel(self,data, Xcol,ycol):
+    def LinearDefaultModel(self, data, Xcol, ycol):
         X = data[Xcol].values
         y = data[ycol]
         X = sm.add_constant(X)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
         model = sm.OLS(y_train, X_train).fit()
-        mape=DataEngineering().mean_absolute_percentage_error(y_test, model.predict(X_test))
+        mape = DataEngineering().mean_absolute_percentage_error(y_test, model.predict(X_test))
         mse, rmse, mae = DataEngineering().MseRmseMae(y_test, model.predict(X_test))
-        vif=DataEngineering().calculate_vif(data,Xcol)
+        vif = DataEngineering().calculate_vif(data, Xcol)
 
-        return (model,mape,mse,rmse,mae,vif)
+        return (model, mape, mse, rmse, mae, vif)
 
-
-    def LogisticrDefaultModel(self,data, Xcol,ycol):
+    def LogisticrDefaultModel(self, data, Xcol, ycol):
         X = data[Xcol].values
         y = data[ycol]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -197,10 +198,9 @@ class ModelFitting:
         y_pred_prob = logisticRegr.predict_proba(X_test)[:, 1]
         auc = roc_auc_score(y_test, y_pred_prob)
 
-        return (model, devDdf,accuracy,auc)
+        return (model, devDdf, accuracy, auc)
 
-
-    def GradientBoostingDefaultModel(self,data, Xcol,ycol, gbr_params):
+    def GradientBoostingDefaultModel(self, data, Xcol, ycol, gbr_params):
         X = data[Xcol].values
         y = data[ycol]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -213,7 +213,8 @@ class ModelFitting:
         r2 = model.score(X_test, y_test)
         importance = model.feature_importances_
 
-        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean=evaluate_model(model, X_train, X_test, y_train, y_test)
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
         imp = ""
@@ -221,11 +222,12 @@ class ModelFitting:
             if DTData['important'][ind] == max(DTData['important']):
                 imp = ind
             elif DTData['important'][ind] == min(DTData['important']):
-                lessimp=ind
+                lessimp = ind
 
-        return (model, mse, mae, r2, imp, lessimp,train_r2, test_r2,train_mae,test_mae,cv_r2_scores,cv_r2_mean,mape)
+        return (
+        model, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
 
-    def RandomForestRegressionDefaultModel(self,X, y, Xcol, n_estimators, max_depth):
+    def RandomForestRegressionDefaultModel(self, X, y, Xcol, n_estimators, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
         # Limit depth of tree to 3 levels
         rf_small = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth)
@@ -242,14 +244,15 @@ class ModelFitting:
         mae = metrics.mean_absolute_error(y_test, predictions)
         mse = metrics.mean_squared_error(y_test, predictions)
 
-        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean=evaluate_model(rf_small, X_train, X_test, y_train, y_test)
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(rf_small, X_train, X_test,
+                                                                                          y_train, y_test)
 
         importance = rf_small.feature_importances_
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
-        return (rf_small, DTData, r2, mse, mae,mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean)
+        return (rf_small, DTData, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean)
 
-    def DecisionTreeRegressionDefaultModel(self,X, y, Xcol, max_depth):
+    def DecisionTreeRegressionDefaultModel(self, X, y, Xcol, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
         model = DecisionTreeRegressor(random_state=0, max_depth=max_depth)
         model.fit(X_train, y_train)
@@ -262,11 +265,12 @@ class ModelFitting:
         DTData = DataFrame(data=columns, index=Xcol)
 
         mape = np.mean(np.abs((y_test - predictions) / y_test)) * 100
-        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean=evaluate_model(model, X_train, X_test, y_train, y_test)
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
 
-        return (model, r2, mse, mae, mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,DTData)
+        return (model, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, DTData)
 
-    def piecewise_linear_fit(self,data, Xcol, ycol, num_breaks):
+    def piecewise_linear_fit(self, data, Xcol, ycol, num_breaks):
         """
         Perform piecewise linear fit using the pwlf library.
         Parameters:
@@ -298,7 +302,8 @@ class ModelFitting:
 
         # Get segment start and end points and their corresponding y values
         segment_points = [(breaks[i], breaks[i + 1]) for i in range(len(breaks) - 1)]
-        segment_values = [(my_pwlf.predict([segment_points[i][0]])[0], my_pwlf.predict([segment_points[i][1]])[0]) for i in
+        segment_values = [(my_pwlf.predict([segment_points[i][0]])[0], my_pwlf.predict([segment_points[i][1]])[0]) for i
+                          in
                           range(len(breaks) - 1)]
 
         # Identify the segment with the maximum absolute slope
@@ -330,7 +335,7 @@ class ModelFitting:
         log_likelihood = -0.5 * n * np.log(2 * np.pi * mse) - 0.5 * n
         bic = k * np.log(n) - 2 * log_likelihood
 
-        return my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,segment_r2_values,mse,mae,bic,aic
+        return my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks, segment_r2_values, mse, mae, bic, aic
 
     def RidgeClassifierModel(self, dataset, Xcol, ycol, class1, class2, cvnum=5):
         X = dataset[Xcol]
@@ -365,8 +370,8 @@ class ModelFitting:
         importances = rclf.coef_[0]
         cv_scores = cross_val_score(rclf, X, y, cv=cvnum)
         return (
-        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision, recall, f1, importances, confusionmatrix,
-        cv_scores)
+            rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision, recall, f1, importances, confusionmatrix,
+            cv_scores)
 
     def KNeighborsClassifierModel(self, dataset, Xcol, ycol, Knum=3, cvnum=5):
         # Extract the feature matrix X and target vector y
@@ -421,8 +426,9 @@ class ModelFitting:
         most_influential_feature = Xcol[most_influential_feature_idx]
 
         return (
-        accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes, total_influence, most_influential_feature,
-        coefficients)
+            accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes, total_influence,
+            most_influential_feature,
+            coefficients)
 
     def DecisionTreeClassifierModel(self, dataset, Xcol, ycol, cvnum=5):
         # Extract the feature matrix X and target vector y
@@ -448,7 +454,7 @@ class ModelFitting:
         # Calculate cross-validation scores
         cv_scores = cross_val_score(clf, X, y, cv=cvnum)
 
-        return (accuracy, precision, feature_importances, recall, f1, confusionmatrix, cv_scores)
+        return (accuracy, precision, feature_importances, recall, f1, confusionmatrix, cv_scores, clf)
 
     def RandomForestClassifierModel(self, dataset, Xcol, ycol, n_estimators=100, cvnum=5):
         # Extract the feature matrix X and target vector y
@@ -476,7 +482,201 @@ class ModelFitting:
 
         return (accuracy, precision, feature_importances, recall, f1, confusionmatrix, cv_scores)
 
-    def kmeanclustermodel(self,X, Xcol, df_agg, minnum_clusters=1, maxnum_clusters=11, n_clusters=5):
+    def RidgeDefaultModel(self, data, Xcol, ycol,
+                          ridge_params=None):
+        if ridge_params is None:
+            ridge_params = {'alpha': 1.0, 'fit_intercept': True, 'copy_X': True,
+                            'max_iter': None, 'tol': 0.001, 'solver': 'auto', 'random_state': None}
+        X = data[Xcol].values
+        y = data[ycol]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+        model = Ridge(**ridge_params)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = model.score(X_test, y_test)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
+
+        columns = {'important': model.coef_}
+        DTData = DataFrame(data=columns, index=Xcol)
+        imp = DTData['important'].abs().idxmax()
+        lessimp = DTData['important'].abs().idxmin()
+
+        return (
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+
+    def LassoDefaultModel(self, data, Xcol, ycol, lasso_params=None):
+        if lasso_params is None:
+            lasso_params = {
+                'alpha': 1.0,
+                'fit_intercept': True,
+                'precompute': False,
+                'copy_X': True,
+                'max_iter': 1000,
+                'tol': 0.0001,
+                'warm_start': False,
+                'positive': False,
+                'random_state': None,
+                'selection': 'cyclic'
+            }
+        X = data[Xcol].values
+        y = data[ycol]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+        model = Lasso(**lasso_params)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = model.score(X_test, y_test)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
+
+        columns = {'important': model.coef_}
+        DTData = DataFrame(data=columns, index=Xcol)
+        imp = DTData['important'].idxmax()
+        lessimp = DTData['important'].idxmin()
+
+        return (
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+
+    def ElasticNetDefaultModel(self, data, Xcol, ycol, enet_params=None):
+        if enet_params is None:
+            enet_params = {
+                'alpha': 1.0,
+                'l1_ratio': 0.5,
+                'fit_intercept': True,
+                'precompute': False,
+                'max_iter': 1000,
+                'copy_X': True,
+                'tol': 0.0001,
+                'warm_start': False,
+                'positive': False,
+                'random_state': None,
+                'selection': 'cyclic'
+            }
+        X = data[Xcol].values
+        y = data[ycol]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+        model = ElasticNet(**enet_params)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = model.score(X_test, y_test)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
+
+        columns = {'important': model.coef_}
+        DTData = DataFrame(data=columns, index=Xcol)
+        imp = DTData['important'].idxmax()
+        lessimp = DTData['important'].idxmin()
+
+        return (
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+
+    def LeastAngleRegressionDefaultModel(self, data, Xcol, ycol, lars_params=None):
+        if lars_params is None:
+            lars_params = {
+                'fit_intercept': True,
+                'verbose': False,
+                'precompute': 'auto',
+                'n_nonzero_coefs': 500,
+                'copy_X': True,
+                'eps': np.finfo(float).eps,
+                'fit_path': True,
+                'jitter': None,
+                'random_state': None
+            }
+        X = data[Xcol].values
+        y = data[ycol]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+        model = Lars(**lars_params)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = model.score(X_test, y_test)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
+
+        columns = {'important': model.coef_}
+        DTData = DataFrame(data=columns, index=Xcol)
+        imp = DTData['important'].idxmax()
+        lessimp = DTData['important'].idxmin()
+
+        return (
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+
+    def AdaBoostDefaultModel(self, data, Xcol, ycol, adaboost_params=None):
+        if adaboost_params is None:
+            adaboost_params = {
+                'n_estimators': 50,
+                'learning_rate': 1.0,
+                'loss': 'linear',
+                'random_state': None
+            }
+        X = data[Xcol].values
+        y = data[ycol]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+        model = AdaBoostRegressor(**adaboost_params)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = model.score(X_test, y_test)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
+
+        columns = {'important': model.feature_importances_}
+        DTData = DataFrame(data=columns, index=Xcol)
+        imp = DTData['important'].idxmax()
+        lessimp = DTData['important'].idxmin()
+
+        return (
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+
+    def KNeighborsDefaultModel(self, data, Xcol, ycol, knn_params=None):
+        if knn_params is None:
+            knn_params = {
+                'n_neighbors': 5,
+                'weights': 'uniform',
+                'algorithm': 'auto',
+                'leaf_size': 30,
+                'p': 2,
+                'metric': 'minkowski',
+                'metric_params': None,
+                'n_jobs': None
+            }
+        X = data[Xcol].values
+        y = data[ycol]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+        model = KNeighborsRegressor(**knn_params)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = model.score(X_test, y_test)
+
+        train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
+                                                                                          y_train, y_test)
+
+        return (
+            model, mse, mae, r2, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+
+    def kmeanclustermodel(self, X, Xcol, df_agg, minnum_clusters=1, maxnum_clusters=11, n_clusters=5):
         # Select features for segmentation
         # X = df_agg[Xcol].values
 
@@ -522,7 +722,7 @@ class ModelFitting:
         return (wcss, summary, best_n_clusters, silhouette_score_value, calinski_harabasz_score_value,
                 davies_bouldin_score_value)
 
-    def PValueCalculation(self,data,Xcol,ycol):
+    def PValueCalculation(self, data, Xcol, ycol):
         X = data[Xcol].values
         y = data[ycol]
         X = sm.add_constant(X)
@@ -538,20 +738,21 @@ class ModelFitting:
         # print(p_values_df)
         return p_values_df
 
+
 class DataDescription:
     def general_description(self, data, Xcol, ycol):
         X = data[Xcol].values
         y = data[ycol].values
         last_X = X[-1]
-        last_X2=X[-2]
+        last_X2 = X[-2]
         last_y = y[-1]
         difference = y[-2] - y[-1]
         percentage_change = (difference / y[-2]) * 100
         max_value = np.max(y)
         max_y_X = X[np.argmax(y)]
-        return (last_X,last_X2,last_y,difference,percentage_change,max_value,max_y_X)
+        return (last_X, last_X2, last_y, difference, percentage_change, max_value, max_y_X)
 
-    def loop_mean_compare(self,dataset, Xcol, ycol):
+    def loop_mean_compare(self, dataset, Xcol, ycol):
         diff = [0] * np.size(Xcol)
         i = 0
         for ind in Xcol:
@@ -559,7 +760,7 @@ class DataDescription:
             i = i + 1
         return (diff)
 
-    def find_row_n_max(self,dataset, Xcol, r=0, max_num=5):
+    def find_row_n_max(self, dataset, Xcol, r=0, max_num=5):
         row_data = dataset[Xcol].values[0:r + 1][r]
         max_data = (heapq.nlargest(max_num, row_data))
         max_factor = []
@@ -568,20 +769,20 @@ class DataDescription:
                 max_factor.append(ind)
         return (max_factor)
 
-    def detect_same_elements(self,list1, list2):
+    def detect_same_elements(self, list1, list2):
         same_element = 0
         for i in list1:
             if i in list2:
                 same_element = same_element + 1
         return (same_element)
 
-    def select_one_element(self,dataset, Xcol, ycol):
+    def select_one_element(self, dataset, Xcol, ycol):
         datasize = np.size(dataset[Xcol])
         y = dataset[ycol].values[0:datasize][datasize - 1]
         X = dataset[Xcol].values[0:datasize][datasize - 1]
         return (X, y)
 
-    def find_all_zero_after_arow(self,dataset, Xcol, ycol):
+    def find_all_zero_after_arow(self, dataset, Xcol, ycol):
         period = dataset[ycol]
         zero_lastdata = ""
         for ind in Xcol:
@@ -591,19 +792,20 @@ class DataDescription:
                     zero_lastdata = period[i]
         return (zero_lastdata)
 
-    def find_column_mean(self,dataset):
+    def find_column_mean(self, dataset):
         meancol = statistics.mean(dataset)
         return (meancol)
 
-    def two_point_percent_differ(self,data,point1,point2):
+    def two_point_percent_differ(self, data, point1, point2):
         data['Change_Percentage'] = (data[point2] - data[point1]) / data[point1] * 100
         return (data)
+
 
 class FindBestModel:
     def __init__(self):
         pass
 
-    def SHAP_interpretion(self,imp_shap, imp_var):
+    def SHAP_interpretion(self, imp_shap, imp_var):
         m = 0
         n = 0
         imp_pos_sum = 0
@@ -624,13 +826,14 @@ class FindBestModel:
         imp_neg_ave = imp_neg_sum / n
         imp_neg_value_ave = imp_neg_value_sum / n
         return (imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave)
-    def pycaret_create_model(self,types, modelname):
+
+    def pycaret_create_model(self, types, modelname):
         if types == 0:
             model = classification.create_model(modelname)
             tuned_model = classification.tune_model(model)
             classification.plot_model(tuned_model, plot='error', save=True)
             classification.plot_model(tuned_model, plot='feature', save=True)
-            if modelname in ['dt', 'rf', 'et', 'lightgbm','xgboost']:
+            if modelname in ['dt', 'rf', 'et', 'lightgbm', 'xgboost']:
                 classification.interpret_model(tuned_model, save=True)
             if modelname in ['lr', 'lda', 'ridge', 'svm']:
                 absolute_values = np.abs(tuned_model.coef_)
@@ -638,13 +841,14 @@ class FindBestModel:
                 # print(absolute_values)
                 # print(column_means)
                 importance = pd.DataFrame({'Feature': classification.get_config('X_train').columns,
-                                       'Value': column_means}).sort_values(by='Value',
-                                                                                                    ascending=False)
+                                           'Value': column_means}).sort_values(by='Value',
+                                                                               ascending=False)
             elif modelname in ['rf', 'et', 'gbc', 'xgboost', 'lightgbm', 'catboost', 'ada', 'dt']:
                 importance = pd.DataFrame({'Feature': classification.get_config('X_train').columns,
-                                       'Value': abs(tuned_model.feature_importances_)}).sort_values(by='Value',ascending=False)
+                                           'Value': abs(tuned_model.feature_importances_)}).sort_values(by='Value',
+                                                                                                        ascending=False)
             else:
-                importance=''
+                importance = ''
 
             # importance = pd.DataFrame({'Feature': classification.get_config('X_train').columns,
             #                            'Value': abs(tuned_model.feature_importances_)}).sort_values(by='Value',
@@ -668,7 +872,8 @@ class FindBestModel:
             #                          'SHAP Value': shap_values[:, 0], 'NUM': range(len(shap_values[:, 0]))})
             # SHAP_figure = cv2.imread('SHAP summary.png')
             # imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave = FindBestModel.SHAP_interpretion(self,imp_shap, imp_var)
-            return (importance['Feature'], imp_var, results['Accuracy'][0], results['AUC'][0], imp_figure, Error_figure,importance)
+            return (importance['Feature'], imp_var, results['Accuracy'][0], results['AUC'][0], imp_figure, Error_figure,
+                    importance)
         elif types == 1:
             model = regression.create_model(modelname)
             tuned_model = regression.tune_model(model)
@@ -679,13 +884,13 @@ class FindBestModel:
                 regression.interpret_model(tuned_model, save=True)
             if modelname in ['gbr', 'rf', 'catboost', 'lightgbm', 'et', 'ada', 'xgboost', 'dt']:
                 importance = pd.DataFrame({'Feature': regression.get_config('X_train').columns,
-                                       'Value': abs(tuned_model.feature_importances_)}).sort_values(by='Value',
-                                                                                                    ascending=False)
+                                           'Value': abs(tuned_model.feature_importances_)}).sort_values(by='Value',
+                                                                                                        ascending=False)
             elif modelname in ['llar', 'ridge', 'br', 'lar', 'lasso', 'lr', 'huber', 'omp', 'par', 'en']:
                 importance = pd.DataFrame({'Feature': regression.get_config('X_train').columns,
-                                       'Value': abs(tuned_model.coef_)}).sort_values(by='Value',ascending=False)
+                                           'Value': abs(tuned_model.coef_)}).sort_values(by='Value', ascending=False)
             else:
-                importance=''
+                importance = ''
             for ind in importance.index:
                 if importance['Value'][ind] == max(importance['Value']):
                     imp_var = importance['Feature'][ind]
@@ -718,26 +923,28 @@ class FindBestModel:
             # SHAP_figure = cv2.imread('SHAP summary.png')
             return (importance['Feature'], imp_var, results['R2'][0], results['MAPE'][0], imp_figure, Error_figure)
 
-    def find_best_regression(self,X,y,selected_dependent_var,selected_criterion,selected_independent_vars,exclude):
+    def find_best_regression(self, X, y, selected_dependent_var, selected_criterion, selected_independent_vars,
+                             exclude):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         dataset = pd.concat([X_train, y_train], axis=1)
         reg = regression.setup(data=dataset, target=selected_dependent_var)
         best_model = regression.compare_models(exclude=exclude, n_select=1, sort=selected_criterion)
         comapre_results = regression.pull()
         p_values = sm.OLS(y, sm.add_constant(X)).fit().pvalues
-        #coefficients = np.append(best_model.intercept_, best_model.coef_)
+        # coefficients = np.append(best_model.intercept_, best_model.coef_)
         # r_squared = r2_score(y_test, best_model.predict(X_test))
         # data_dict = {'Coefficients': coefficients[1:]}
         # data_dict['P-values'] =p_values[1:]
         # coef_pval_df = pd.DataFrame(data_dict, index=selected_independent_vars)
         # coef_pval_df.index.name = "Xcol"
         # coef_pval_df = coef_pval_df.reset_index()
-        modeldetail=str(best_model)
-        pycaretname = FindBestModel.readable_name_converted_input_name(self,best_model)
-        modelname=FindBestModel.more_readable_model_name(self,modeldetail)
-        return (modelname,modeldetail,selected_criterion,comapre_results,pycaretname)
+        modeldetail = str(best_model)
+        pycaretname = FindBestModel.readable_name_converted_input_name(self, best_model)
+        modelname = FindBestModel.more_readable_model_name(self, modeldetail)
+        return (modelname, modeldetail, selected_criterion, comapre_results, pycaretname)
 
-    def find_best_classifier(self, X, y, selected_dependent_var, selected_criterion, selected_independent_vars,exclude):
+    def find_best_classifier(self, X, y, selected_dependent_var, selected_criterion, selected_independent_vars,
+                             exclude):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         dataset = pd.concat([X_train, y_train], axis=1)
         clf = classification.setup(data=dataset, target=selected_dependent_var)
@@ -761,12 +968,11 @@ class FindBestModel:
         # accuracy = accuracy_score(y_test, y_pred)
         modeldetail = str(best_model)
         pycaretname = FindBestModel.readable_name_converted_input_name(self, best_model)
-        modelname=FindBestModel.more_readable_model_name(self,modeldetail)
-        return (modelname,modeldetail,selected_criterion,comapre_results,pycaretname)
+        modelname = FindBestModel.more_readable_model_name(self, modeldetail)
+        return (modelname, modeldetail, selected_criterion, comapre_results, pycaretname)
 
-
-    def more_readable_model_name(self,modeldetail):
-        modeldetail=modeldetail
+    def more_readable_model_name(self, modeldetail):
+        modeldetail = modeldetail
         if "Ridge" in modeldetail and "BayesianRidge" not in modeldetail:
             translatedmodel = "Ridge Model"
         elif "LinearDiscriminant" in modeldetail:
@@ -825,10 +1031,10 @@ class FindBestModel:
             translatedmodel = "Dummy Regressor"
         elif "Lars" in modeldetail:
             translatedmodel = "Least Angle Regression"
-        modelname=translatedmodel
+        modelname = translatedmodel
         return modelname
 
-    def readable_name_converted_input_name(self,modeldetail):
+    def readable_name_converted_input_name(self, modeldetail):
         modeldetail = str(modeldetail)
         if "Ridge" in modeldetail and "BayesianRidge" not in modeldetail:
             pycaretname = "ridge"

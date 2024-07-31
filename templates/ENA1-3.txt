@@ -1,0 +1,18 @@
+Here are FAQ-like reports to help you understand how to predict {{ycol}} using {%- for i in range(indeNum) %} {{ Xcol[i] }}{%- if i < indeNum - 2 %},{% elif i == indeNum - 2 %} and{% endif -%}{%- endfor %} by fitting the dataset with an Elastic Net Regression Model.
+
+The R-Squared for the {{modelName}} has a value of {{r2 | round(3)}}.
+{%- if r2 < 0.3 %}
+ So, the relationship between the chosen independent variable and the dependent variable is None or Very weak. You might not trust the analysis provided to make inferences.
+{%- elif r2 < 0.5 and r2 > 0.3 %}
+ So, the relationship between the chosen independent variable and the dependent variable is Weak or Low. You might use the analysis provided to make inferences.
+{%- elif r2 < 0.7 and r2 > 0.5 %}
+ So, the relationship between the chosen independent variable and the dependent variable is Moderate. You could trust the analysis provided to make inferences.
+{%- else %}
+ So, there is a strong relationship between the chosen independent variable and the dependent variable. You can trust the analysis provided to make inferences.
+{%endif %} Additionally, the mean absolute percentage error (MAPE) of the tuned model is {{mape | round(3)}}, 
+{%- if mape == 'inf' %} which means the MAPE cannot be calculated because the dependent variable contains zero values.
+{%- elif mape < 0.05 %} which means the forecast of the model is acceptable with good accuracy.
+{%- elif mape >= 0.05 and mape < 0.1 %} which means the forecast of the model is acceptably accurate.
+{%- elif mape >= 0.1 and mape < 0.25 %} which means the forecast of the model has low accuracy but is still acceptable.
+{%- else %} which means the forecast of the model is not acceptable due to its very low accuracy.
+{%- endif %} Also, the model's Mean Squared Error (MSE) is {{ mse | round(3)}}, which measures the average squared difference between predicted and actual values. The model's Root Mean Squared Error (RMSE) is {{ rmse | round(3)}}, which is the square root of MSE and provides an error measure in the same units as the original data. The model's Mean Absolute Error (MAE) is {{ mae | round(3) }}, which measures the average absolute difference between predicted and actual values. These metrics are useful for comparing models; generally, the smaller these values, the better the model's performance.

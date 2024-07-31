@@ -1,0 +1,13 @@
+Among all the independent variables, 
+{% if positive_effects %}
+increases in {{ positive_effects|join(', ') }} will increase {{ ycol }},
+{% endif %}
+{% if negative_effects %}
+increases in {{ negative_effects|join(', ') }} will decrease {{ ycol }},
+{% endif %}
+{% if no_effects %}
+and {{ no_effects|join(', ') }} will have almost no effect on {{ ycol }}.
+{% endif %}
+Notably, the {{ imp }} is the most important independent variable affecting the {{ ycol }}.
+
+

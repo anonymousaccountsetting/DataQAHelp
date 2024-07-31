@@ -1,0 +1,9 @@
+{%- if section==1 -%}
+Question: Does the{% if m=="rr" %} ridge regression{% elif m=="lr" %} lasso regression{% elif m=="en" %} elastic net{% elif m=="lar" %} least angle regression{% elif m=="ada" %} ada boost regression{% elif m=="knr" %} K neighbors regression{% endif %} model fit the dataset well?
+{%- endif -%}
+{%- if section==2 -%}
+Question: What does the {{ycol}} change by increasing the {{xcol}}?
+{%- endif -%}
+{%- if section==3 -%}
+Question: Which independent variable has the greatest impact on the dependent variable ({{ycol}})?
+{%- endif -%}
