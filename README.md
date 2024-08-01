@@ -1,7 +1,9 @@
 [//]: # (<p align="center"><a href="#"><img width=60% alt="" src="https://github.com/lux-org/lux-resources/blob/master/readme_img/logo.png?raw=true"></a></p>)
 <h1 align="center">DataQAHelper</h1>
 <h3 align="center">A Framework for Data-to-Text Application Development</h3>
-
+<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/cover.jpg"
+  alt="DataQAHelper Cover"
+  style="width:1920px" />
 
 The DataQAHelper is a Python-based framework that integrates commonly used data science algorithms with model-based question banks and answer templates. This framework aims to facilitate a quick start in developing data-to-text applications. With just a few lines of code, users can quickly build applications to support data visualization, model evaluation, and data interpretation. The unique feature of this framework is its ability to transform complex data analysis results into understandable FAQ-like textual reports, enabling users to quickly grasp the insights from the dataset.
 
