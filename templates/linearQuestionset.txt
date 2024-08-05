@@ -1,19 +1,31 @@
 {%- if section==1 -%}
 {%- if qs[0]==1 -%}
-Question: Is the relationship between the variables strong?
+Is the relationship between the variables strong?
 {%- else -%}
 Dataset Overview
 {%- endif -%}
 {%- endif -%}
 {%- if section==2 -%}
 {%- if qs[2]==1 and qs[1]==0 -%}
-Question: What does the {{ycol}} change by increasing the {{xcol}}?
+What does the {{ycol}} change by increasing the {{xcol}}?
 {%- elif qs[1]==1 and qs[2]==0 -%}
-Question: Does the {{xcol}} have a significant effect on the {{ycol}}?
+Does the {{xcol}} have a significant effect on the {{ycol}}?
 {%- elif qs[1]==1 and qs[2]==1 -%}
-Question: How does the {{ycol}} change with an increase in the {{xcol}}? And does the {{xcol}} have a significant effect on the {{ycol}}?
+How does the {{ycol}} change with an increase in the {{xcol}}? And does the {{xcol}} have a significant effect on the {{ycol}}?
 {%- endif -%}
 {%- endif -%}
 {%- if section==3 -%}
-Summary of Previous Questions.
+Which independent variable is most important to the dependent variable?
+{%- endif -%}
+{%- if section==4 -%}
+How well does the model's prediction compare to actual values in percentage terms? 
+{%- endif -%}
+{%- if section==5 -%}
+What is the average squared deviation between the predicted and actual values, and how does it indicate prediction accuracy? 
+{%- endif -%}
+{%- if section==6 -%}
+What is the average absolute deviation between the predicted and actual values, and how accurately does it measure prediction performance? 
+{%- endif -%}
+{%- if section==7 -%}
+How independent are the predictor variables, and is multicollinearity present in the regression model?
 {%- endif -%}

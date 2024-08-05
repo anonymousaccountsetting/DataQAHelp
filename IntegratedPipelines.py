@@ -23,11 +23,14 @@ class general_datastory_pipeline:
             r2 = model.rsquared
         NC.DocumentplanningandDashboard().LinearModelStats_view( linearData,r2,mape,mse,rmse,mae,vif,data, Xcol, ycol, questionset, expect,portnum)
 
-    def LogisticFit(self,data, Xcol, ycol, Xnewname="", ynewname="",pos_class_mean='', questionset=[1, 1, 1, 1],portnum=8050):
+
+    def LogisticFit(self, data, Xcol, ycol, Xnewname="", ynewname="", pos_class_mean='', questionset=[1, 1, 1, 1],
+                    portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        model, devDdf,accuracy,auc = DC.ModelFitting().LogisticrDefaultModel(data, Xcol, ycol)
-        NC.DocumentplanningandDashboard().LogisticModelStats_view(model,data, Xcol, ycol, devDdf,accuracy,auc, pos_class_mean,questionset,portnum)
+        model, devDdf, accuracy, auc = DC.ModelFitting().LogisticrDefaultModel(data, Xcol, ycol)
+        NC.DocumentplanningandDashboard().LogisticModelStats_view(model, data, Xcol, ycol, devDdf, accuracy, auc,
+                                                                  pos_class_mean, questionset, portnum)
 
     def GradientBoostingFit(self, data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1],
                             gbr_params={'n_estimators': 500, 'max_depth': 3, 'min_samples_split': 5,
@@ -35,45 +38,60 @@ class general_datastory_pipeline:
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
 
-        model, mse, mae, r2, imp, lessimp,train_r2, test_r2,train_mae,test_mae,cv_r2_scores,cv_r2_mean,mape = DC.ModelFitting().GradientBoostingDefaultModel(data,
-                                                                                                              Xcol,
-                                                                                                              ycol,
-                                                                                                              gbr_params)
-        NC.DocumentplanningandDashboard().GradientBoostingModelStats_view(data, Xcol, ycol, model, mse, mae,r2, imp,lessimp,
-                                                                          questionset, gbr_params, train_r2, test_r2,train_mae,test_mae,cv_r2_scores,cv_r2_mean, mape,portnum)
+        model, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test = DC.ModelFitting().GradientBoostingDefaultModel(
+            data,
+            Xcol,
+            ycol,
+            gbr_params)
+        NC.DocumentplanningandDashboard().GradientBoostingModelStats_view(data, Xcol, ycol, model, mse, mae, r2, imp,
+                                                                          lessimp,
+                                                                          questionset, gbr_params, train_r2, test_r2,
+                                                                          train_mae, test_mae, cv_r2_scores, cv_r2_mean,
+                                                                          mape, imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test,portnum)
 
-    def RandomForestFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], n_estimators=10,
-                               max_depth=3,portnum=8050):
+    def RandomForestFit(self, data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], n_estimators=10,
+                        max_depth=3, portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
         X = data[Xcol].values
         y = data[ycol]
-        rf_small, DTData, r2, mse, mae,mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = DC.ModelFitting().RandomForestRegressionDefaultModel(X, y, Xcol, n_estimators, max_depth)
-        NC.DocumentplanningandDashboard().RandomForestRegressionModelStats_view(data, Xcol, ycol, rf_small, DTData, r2, mse, mae,mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, questionset,portnum)
+        rf_small, DTData, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test = DC.ModelFitting().RandomForestRegressionDefaultModel(
+            X, y, Xcol, n_estimators, max_depth)
+        NC.DocumentplanningandDashboard().RandomForestRegressionModelStats_view(data, Xcol, ycol, rf_small, DTData, r2,
+                                                                                mse, mae, mape, train_r2, test_r2,
+                                                                                train_mae, test_mae, cv_r2_scores,
+                                                                                cv_r2_mean, imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var, explainer,shap_values,X_test,portnum)
 
-    def DecisionTreeFit(self,data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], max_depth=3,portnum=8050):
+    def DecisionTreeFit(self, data, Xcol, ycol, Xnewname="", ynewname="", questionset=[1, 1, 1], max_depth=3,
+                        portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
         X = data[Xcol].values
         y = data[ycol]
-        model, r2, mse, mae, mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,DTData = DC.ModelFitting().DecisionTreeRegressionDefaultModel(X, y, Xcol, max_depth)
-        NC.DocumentplanningandDashboard().DecisionTreeRegressionModelStats_view(data, Xcol, ycol, DTData, model, r2, mse, mae, mape,train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, questionset,portnum)
+        model, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, DTData,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test = DC.ModelFitting().DecisionTreeRegressionDefaultModel(
+            X, y, Xcol, max_depth)
+        NC.DocumentplanningandDashboard().DecisionTreeRegressionModelStats_view(data, Xcol, ycol, DTData, model, r2,
+                                                                                mse, mae, mape, train_r2, test_r2,
+                                                                                train_mae, test_mae, cv_r2_scores,
+                                                                                cv_r2_mean, imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test, portnum)
 
     def piecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname="", portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks,segment_r2_values,mse,mae,bic,aic = DC.ModelFitting().piecewise_linear_fit(
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks, segment_r2_values, mse, mae, bic, aic = DC.ModelFitting().piecewise_linear_fit(
             data, Xcol, ycol, num_breaks)
         NC.DocumentplanningandDashboard().piecewise_linear_view(data, Xcol, ycol, my_pwlf, slopes, segment_points,
-                                                                segment_values, max_slope_segment, breaks, segment_r2_values,mse,mae,bic,aic,portnum)
+                                                                segment_values, max_slope_segment, breaks,
+                                                                segment_r2_values, mse, mae, bic, aic, portnum)
 
     def RidgeClassifierFit(self, data, Xcol, ycol, class1, class2, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy,precision,recall,f1, importances, confusionmatrix, cv_scores = DC.ModelFitting().RidgeClassifierModel(
+        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision, recall, f1, importances, confusionmatrix, cv_scores = DC.ModelFitting().RidgeClassifierModel(
             data, Xcol, ycol, class1, class2)
         NC.DocumentplanningandDashboard().RidgeClassifier_view(data, Xcol, ycol, rclf, pca, y_test, y_prob, roc_auc,
-                                                               X_pca, accuracy,precision,recall,f1, importances, class1, class2,
+                                                               X_pca, accuracy, precision, recall, f1, importances,
+                                                               class1, class2,
                                                                confusionmatrix, cv_scores)
 
     def KNeighborsClassifierFit(self, data, Xcol, ycol, Xnewname="", ynewname="", Knum=3, cvnum=5):
@@ -88,14 +106,15 @@ class general_datastory_pipeline:
     def SVMClassifierFit(self, data, Xcol, ycol, Xnewname="", ynewname="", kernel='linear', C=1.0, cvnum=5):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        accuracy, precision, recall, f1, confusionmatrix, cv_scores,classes,total_influence,most_influential_feature,coefficients = DC.ModelFitting().SVCClassifierModel(data, Xcol,
-                                                                                                           ycol,
-                                                                                                           kernel=kernel,
-                                                                                                           C=C,
-                                                                                                           cvnum=cvnum)
+        accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes, total_influence, most_influential_feature, coefficients = DC.ModelFitting().SVCClassifierModel(
+            data, Xcol,
+            ycol,
+            kernel=kernel,
+            C=C,
+            cvnum=cvnum)
         NC.DocumentplanningandDashboard().SVCClassifier_view(data, Xcol, ycol, accuracy, precision, recall, f1,
-                                                             confusionmatrix, cv_scores,classes,total_influence,most_influential_feature,coefficients)
-
+                                                             confusionmatrix, cv_scores, classes, total_influence,
+                                                             most_influential_feature, coefficients)
 
     def DecisionTreeClassifierFit(self, data, Xcol, ycol, Xnewname="", ynewname="", cvnum=5):
         if Xnewname != "" or ynewname != "":
@@ -118,38 +137,38 @@ class general_datastory_pipeline:
     def RidgeRegressionFit(self, data, Xcol, ycol, Xnewname="", ynewname="", ridge_params=None):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape = DC.ModelFitting().RidgeDefaultModel(
+        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif = DC.ModelFitting().RidgeDefaultModel(
             data, Xcol, ycol, ridge_params)
         NC.DocumentplanningandDashboard().RidgeRegressionModel_view(data, Xcol, ycol, DTData, mse, mae, r2, imp,
                                                                     lessimp, train_r2, test_r2, train_mae, test_mae,
-                                                                    cv_r2_scores, cv_r2_mean, mape)
+                                                                    cv_r2_scores, cv_r2_mean, mape,vif)
 
     def LassoRegressionFit(self, data, Xcol, ycol, Xnewname="", ynewname="", lasso_params=None):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape = DC.ModelFitting().LassoDefaultModel(
+        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif = DC.ModelFitting().LassoDefaultModel(
             data, Xcol, ycol, lasso_params)
         NC.DocumentplanningandDashboard().LassoRegressionModel_view(data, Xcol, ycol, DTData, mse, mae, r2, imp,
                                                                     lessimp, train_r2, test_r2, train_mae, test_mae,
-                                                                    cv_r2_scores, cv_r2_mean, mape)
+                                                                    cv_r2_scores, cv_r2_mean, mape,vif)
 
     def ElasticNetRegressionFit(self, data, Xcol, ycol, Xnewname="", ynewname="", enet_params=None):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape = DC.ModelFitting().ElasticNetDefaultModel(
+        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif = DC.ModelFitting().ElasticNetDefaultModel(
             data, Xcol, ycol, enet_params)
         NC.DocumentplanningandDashboard().ElasticNetModel_view(data, Xcol, ycol, DTData, mse, mae, r2, imp, lessimp,
                                                                train_r2, test_r2, train_mae, test_mae, cv_r2_scores,
-                                                               cv_r2_mean, mape)
+                                                               cv_r2_mean, mape,vif)
 
     def LeastAngleRegressionFit(self, data, Xcol, ycol, Xnewname="", ynewname="", lars_params=None):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape = DC.ModelFitting().LeastAngleRegressionDefaultModel(
+        DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif = DC.ModelFitting().LeastAngleRegressionDefaultModel(
             data, Xcol, ycol, lars_params)
         NC.DocumentplanningandDashboard().LeastAngleRegressionModel_view(data, Xcol, ycol, DTData, mse, mae, r2, imp,
                                                                          lessimp, train_r2, test_r2, train_mae,
-                                                                         test_mae, cv_r2_scores, cv_r2_mean, mape)
+                                                                         test_mae, cv_r2_scores, cv_r2_mean, mape,vif)
 
     def AdaBoostRegressionFit(self, data, Xcol, ycol, Xnewname="", ynewname="", adaboost_params=None):
         if Xnewname != "" or ynewname != "":
@@ -163,7 +182,7 @@ class general_datastory_pipeline:
     def KNeighborsRegressionFit(self, data, Xcol, ycol, Xnewname="", ynewname="", adaboost_params=None):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        model, mse, mae, r2, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape = DC.ModelFitting().KNeighborsDefaultModel(
+        model, mse, mae, r2, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape= DC.ModelFitting().KNeighborsDefaultModel(
             data, Xcol, ycol, adaboost_params)
         NC.DocumentplanningandDashboard().KNeighborsRegressionModel_view(data, Xcol, ycol, model, mse, mae, r2,
                                                                          train_r2, test_r2, train_mae, test_mae,

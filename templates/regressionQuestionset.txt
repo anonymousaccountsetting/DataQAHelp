@@ -7,3 +7,6 @@ Question: What does the {{ycol}} change by increasing the {{xcol}}?
 {%- if section==3 -%}
 Question: Which independent variable has the greatest impact on the dependent variable ({{ycol}})?
 {%- endif -%}
+{%- if section==4 -%}
+Question: What is the contribution of the most important feature to the model's predictions, and how does it impact the prediction for individual samples?
+{%- endif -%}

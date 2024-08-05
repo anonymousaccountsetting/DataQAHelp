@@ -29,6 +29,7 @@ import heapq
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+import shap
 from itertools import islice
 
 
@@ -45,6 +46,50 @@ def evaluate_model(model, X_train, X_test, y_train, y_test):
     cv_r2_mean = np.mean(cv_r2_scores)
 
     return train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean
+
+
+def SHAP_imp(model,X_test,Xcol):
+    explainer = shap.TreeExplainer(model)
+
+    shap_values = explainer.shap_values(X_test)
+
+    importance = pd.DataFrame({
+        'Feature': Xcol,
+        'Value': np.mean(np.abs(shap_values), axis=0)
+    })
+    importance = importance.sort_values(by='Value', ascending=False)
+
+    for ind in importance.index:
+        if importance['Value'][ind] == max(importance['Value']):
+            imp_var = importance['Feature'][ind]
+
+    imp_shap = pd.DataFrame(X_test, columns=Xcol)
+    imp_shap['SHAP Value'] = shap_values[:, Xcol.index(imp_var)]
+    imp_shap['NUM'] = range(len(imp_shap))
+
+    return (imp_shap,imp_var,explainer,shap_values)
+
+def SHAP_interpretion( imp_shap, imp_var):
+    m = 0
+    n = 0
+    imp_pos_sum = 0
+    imp_pos_value_sum = 0
+    imp_neg_sum = 0
+    imp_neg_value_sum = 0
+    for i in imp_shap['NUM']:
+        if float(imp_shap['SHAP Value'].loc[imp_shap['NUM'] == i]) >= 0:
+            imp_pos_sum = imp_pos_sum + float(imp_shap['SHAP Value'].loc[imp_shap['NUM'] == i])
+            imp_pos_value_sum = imp_pos_value_sum + float(imp_shap[imp_var].loc[imp_shap['NUM'] == i])
+            m = m + 1
+        else:
+            imp_neg_sum = imp_neg_sum + float(imp_shap['SHAP Value'].loc[imp_shap['NUM'] == i])
+            imp_neg_value_sum = imp_neg_value_sum + float(imp_shap[imp_var].loc[imp_shap['NUM'] == i])
+            n = n + 1
+    imp_pos_ave = imp_pos_sum / m
+    imp_pos_value_ave = imp_pos_value_sum / m
+    imp_neg_ave = imp_neg_sum / n
+    imp_neg_value_ave = imp_neg_value_sum / n
+    return (imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave)
 
 
 class DataEngineering:
@@ -215,6 +260,12 @@ class ModelFitting:
 
         train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
                                                                                           y_train, y_test)
+
+
+        imp_shap,imp_var,explainer,shap_values=SHAP_imp(model,X_test,Xcol)
+        imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave=SHAP_interpretion(imp_shap,imp_var)
+
+
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
         imp = ""
@@ -225,7 +276,7 @@ class ModelFitting:
                 lessimp = ind
 
         return (
-        model, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+        model, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test)
 
     def RandomForestRegressionDefaultModel(self, X, y, Xcol, n_estimators, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -247,10 +298,13 @@ class ModelFitting:
         train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(rf_small, X_train, X_test,
                                                                                           y_train, y_test)
 
+        imp_shap,imp_var,explainer,shap_values=SHAP_imp(rf_small,X_test,Xcol)
+        imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave=SHAP_interpretion(imp_shap,imp_var)
+
         importance = rf_small.feature_importances_
         columns = {'important': importance}
         DTData = DataFrame(data=columns, index=Xcol)
-        return (rf_small, DTData, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean)
+        return (rf_small, DTData, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test)
 
     def DecisionTreeRegressionDefaultModel(self, X, y, Xcol, max_depth):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -268,7 +322,10 @@ class ModelFitting:
         train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
                                                                                           y_train, y_test)
 
-        return (model, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, DTData)
+        imp_shap,imp_var,explainer,shap_values=SHAP_imp(model,X_test,Xcol)
+        imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave=SHAP_interpretion(imp_shap,imp_var)
+
+        return (model, r2, mse, mae, mape, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, DTData,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test)
 
     def piecewise_linear_fit(self, data, Xcol, ycol, num_breaks):
         """
@@ -370,8 +427,8 @@ class ModelFitting:
         importances = rclf.coef_[0]
         cv_scores = cross_val_score(rclf, X, y, cv=cvnum)
         return (
-            rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision, recall, f1, importances, confusionmatrix,
-            cv_scores)
+        rclf, pca, y_test, y_prob, roc_auc, X_pca, accuracy, precision, recall, f1, importances, confusionmatrix,
+        cv_scores)
 
     def KNeighborsClassifierModel(self, dataset, Xcol, ycol, Knum=3, cvnum=5):
         # Extract the feature matrix X and target vector y
@@ -426,9 +483,8 @@ class ModelFitting:
         most_influential_feature = Xcol[most_influential_feature_idx]
 
         return (
-            accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes, total_influence,
-            most_influential_feature,
-            coefficients)
+        accuracy, precision, recall, f1, confusionmatrix, cv_scores, classes, total_influence, most_influential_feature,
+        coefficients)
 
     def DecisionTreeClassifierModel(self, dataset, Xcol, ycol, cvnum=5):
         # Extract the feature matrix X and target vector y
@@ -485,7 +541,7 @@ class ModelFitting:
     def RidgeDefaultModel(self, data, Xcol, ycol,
                           ridge_params=None):
         if ridge_params is None:
-            ridge_params = {'alpha': 1.0, 'fit_intercept': True, 'copy_X': True,
+            ridge_params = {'alpha': 1.0, 'fit_intercept': True,'copy_X': True,
                             'max_iter': None, 'tol': 0.001, 'solver': 'auto', 'random_state': None}
         X = data[Xcol].values
         y = data[ycol]
@@ -505,9 +561,9 @@ class ModelFitting:
         DTData = DataFrame(data=columns, index=Xcol)
         imp = DTData['important'].abs().idxmax()
         lessimp = DTData['important'].abs().idxmin()
-
+        vif = DataEngineering().calculate_vif(data, Xcol)
         return (
-            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif)
 
     def LassoDefaultModel(self, data, Xcol, ycol, lasso_params=None):
         if lasso_params is None:
@@ -541,9 +597,9 @@ class ModelFitting:
         DTData = DataFrame(data=columns, index=Xcol)
         imp = DTData['important'].idxmax()
         lessimp = DTData['important'].idxmin()
-
+        vif = DataEngineering().calculate_vif(data, Xcol)
         return (
-            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif)
 
     def ElasticNetDefaultModel(self, data, Xcol, ycol, enet_params=None):
         if enet_params is None:
@@ -578,9 +634,9 @@ class ModelFitting:
         DTData = DataFrame(data=columns, index=Xcol)
         imp = DTData['important'].idxmax()
         lessimp = DTData['important'].idxmin()
-
+        vif = DataEngineering().calculate_vif(data, Xcol)
         return (
-            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif)
 
     def LeastAngleRegressionDefaultModel(self, data, Xcol, ycol, lars_params=None):
         if lars_params is None:
@@ -605,7 +661,7 @@ class ModelFitting:
         mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
         mse = mean_squared_error(y_test, y_pred)
         r2 = model.score(X_test, y_test)
-
+        vif = DataEngineering().calculate_vif(data, Xcol)
         train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean = evaluate_model(model, X_train, X_test,
                                                                                           y_train, y_test)
 
@@ -615,7 +671,7 @@ class ModelFitting:
         lessimp = DTData['important'].idxmin()
 
         return (
-            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape)
+            DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif)
 
     def AdaBoostDefaultModel(self, data, Xcol, ycol, adaboost_params=None):
         if adaboost_params is None:
@@ -735,8 +791,10 @@ class ModelFitting:
         })
 
         p_values_df = p_values_df[p_values_df['Feature'] != 'const']
-        # print(p_values_df)
+        print(p_values_df)
         return p_values_df
+
+
 
 
 class DataDescription:

@@ -15,7 +15,7 @@ import os
 from docx import Document
 from docx.shared import RGBColor
 import pandas as pd
-
+import shap
 # Loading the folder that contains the txt templates
 
 # file_loader = FileSystemLoader('./templates')
@@ -43,6 +43,9 @@ linearA2_2 = env.get_template('linearA2-2.txt')
 linearA2_3 = env.get_template('linearA2-3.txt')
 linearSummary3 = env.get_template('linearSummary3.txt')
 linearQuestion = env.get_template('linearQuestionset.txt')
+regressionQuestion = env.get_template('regressionQuestionset.txt')
+regressionSummary = env.get_template('regressionSummary.txt')
+regressionvif = env.get_template('regression_vif.txt')
 GBRA1_1 = env.get_template('GBRA1-1.txt')
 GBRA1_2 = env.get_template('GBRA1-2.txt')
 GBRA1_3 = env.get_template('GBRA1-3.txt')
@@ -319,6 +322,22 @@ def ThreeSubtab(child1,child2,child3):
     ])
     return (subtab1,subtab2,subtab3)
 
+def ThreeSubQA(Q1,Q2,Q3,A1, A2, A3):
+    subtab1 = dcc.Tab(label='Simple Question and Answer', children=[  html.B('Question: '),html.P(Q1),html.Br(),
+        html.B('Answer: '),html.P(A1)
+    ])
+
+    subtab2 = dcc.Tab(label='Detailed Question and Answer', children=[html.B('Question: '),html.P(Q2),html.Br(),
+                                                         html.B('Answer: '),
+                                                         html.P(A2)
+    ])
+
+    subtab3 = dcc.Tab(label='More Detailed Question and Answer', children=[html.B('Question: '),html.P(Q3),html.Br(),
+                                                              html.B('Answer: '),
+                                                              html.P(A3)
+    ])
+    return (subtab1, subtab2, subtab3)
+
 def TwoSubtab(child1, child2):
     subtab1 = dcc.Tab(label='Simple Answer', children=[
         html.P(child1)
@@ -438,14 +457,15 @@ class Microplanning:
 
 
 class DocumentplanningandDashboard:
-    def LinearModelStats_view(self, linearData, r2, mape,mse,rmse,mae,vif,data, Xcol, ycol,questionset, expect, portnum):
+
+    def LinearModelStats_view(self, linearData, r2, mape, mse, rmse, mae, vif, data, Xcol, ycol, questionset, expect,
+                              portnum):
 
         if expect == "":
             expect = ["", "", ""]
-
-        # Store results for xcol
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
+        # Store results for xcol
         for ind in linearData.index:
             ax = sns.regplot(x=ind, y=ycol, data=data)
             plt.savefig('pictures/{}.png'.format(ind))
@@ -459,26 +479,29 @@ class DocumentplanningandDashboard:
 
         # Add to dashbord Linear Model Statistics
         fig = px.bar(linearData)
-        question = linearQuestion.render(xcol=Xcol, ycol=ycol, qs=questionset, section=1, indeNum=np.size(Xcol),
-                                         trend=expect[0])
+
         intro = linearSummary2.render(r2=r2, indeNum=np.size(Xcol), modelName="Linear Model", Xcol=Xcol,
                                       ycol=ycol, qs=questionset, t=expect[0], expect=expect[1])
 
         aim = Xcol
         aim.insert(0, ycol)
 
-        text1=linearA1_1.render(r2=r2)
-        text2=linearA1_2.render(r2=r2,mape=mape)
-        text3=linearA1_3.render(r2=r2,mape=mape,mse=mse,rmse=rmse,mae=mae)
+        question1 = linearQuestion.render(xcol=Xcol, ycol=ycol, qs=questionset, section=1, indeNum=np.size(Xcol),
+                                         trend=expect[0])
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        text1 = intro+' '+linearA1_1.render(r2=r2)
+        text2 = intro+' '+linearA1_2.render(r2=r2, mape=mape)
+        text3 = intro+' '+linearA1_3.render(r2=r2, mape=mape, mse=mse, rmse=rmse, mae=mae)
 
-        subtab1,subtab2,subtab3=ThreeSubtab(text1,text2,text3)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
         # add subtab to the tab
-        children = [html.P(question), html.Br(), html.P(intro),
-                    dcc.Tabs([subtab1, subtab2, subtab3]),
-            dash_table.DataTable(data[aim].to_dict('records'),
-                                 [{"name": i, "id": i} for i in data[aim].columns],
-                                 style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [ dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in data[aim].columns],
+                                         style_table={'height': '400px', 'overflowY': 'auto'}),
+                    dcc.Tabs([subtab1, subtab2, subtab3])
+                    ]
 
         dash_tab_add(listTabs, 'LinearModelStats', children)
         aim.remove(ycol)
@@ -487,15 +510,17 @@ class DocumentplanningandDashboard:
         # Add to dashbord Xcol plots and data story
 
         for ind in linearData.index:
-            question = linearQuestion.render(xcol=ind, ycol=ycol, qs=questionset, section=2, indeNum=1, trend=expect[0])
-
+            question1 = linearQuestion.render(xcol=ind, ycol=ycol, qs=[0,0,1], section=2, indeNum=1, trend=expect[0])
+            question2 = linearQuestion.render(xcol=ind, ycol=ycol, qs=questionset, section=2, indeNum=1, trend=expect[0])
+            question3=question2+' '+linearQuestion.render(section=7)
             text1 = linearA2_1.render(xcol=ind, ycol=ycol, coeff=linearData['coeff'][ind])
             text2 = linearA2_2.render(xcol=ind, ycol=ycol, coeff=linearData['coeff'][ind],
-                                            p=linearData['pvalue'][ind])
+                                      p=linearData['pvalue'][ind])
             text3 = linearA2_3.render(xcol=ind, ycol=ycol, coeff=linearData['coeff'][ind],
-                                            p=linearData['pvalue'][ind],vif_value=vif[vif['feature'] == ind]['VIF'].values[0])
+                                      p=linearData['pvalue'][ind],
+                                      vif_value=vif[vif['feature'] == ind]['VIF'].values[0])
 
-            subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+            subtab1, subtab2, subtab3 = ThreeSubQA(question1, question2, question3,text1,text2,text3)
 
             # newstory = MicroLexicalization(story)
             if abs(linearData['coeff'][ind]) == max(abs(linearData['coeff'])):
@@ -511,7 +536,7 @@ class DocumentplanningandDashboard:
 
             if questionset[1] == 1 or questionset[2] == 1:
                 children = [
-                    html.Img(src='data:image/png;base64,{}'.format(_base64[i])), html.P(question), html.Br(),
+                    html.Img(src='data:image/png;base64,{}'.format(_base64[i])),
                     dcc.Tabs([subtab1, subtab2, subtab3])
                 ]
                 dash_tab_add(listTabs, ind, children)
@@ -521,22 +546,22 @@ class DocumentplanningandDashboard:
         summary = linearSummary3.render(imp=imp, ycol=ycol, nss=nss, ss=ss, pf=pf, nf=nf, t=expect[0], r2=r2,
                                         qs=questionset)
 
-        children = [dcc.Graph(figure=fig), html.P(question), html.Br(), html.P(summary)]
+        children = [dcc.Graph(figure=fig), html.B('Question: '),html.P(question), html.Br(), html.B('Answer: '),html.P(summary)]
         dash_tab_add(listTabs, 'Summary', children)
 
         run_app(linear_app, listTabs, portnum)
 
-    def LogisticModelStats_view(self, model, data, Xcol, ycol, devDdf, accuracy, auc, pos_class_mean, questionset, portnum):
+    def LogisticModelStats_view(self, model, data, Xcol, ycol, devDdf, accuracy, auc, pos_class_mean, questionset,
+                                portnum):
 
         # Create data frames for coefficients, p-values and importance scores.
         columns1 = {'coeff': model.params.values, 'pvalue': model.pvalues.round(4).values}
         logisticData1 = DataFrame(data=columns1, index=Xcol)
         columns2 = {'importance score': abs(model.params.values)}
         logisticData2 = DataFrame(data=columns2, index=Xcol)
-
-        # Store results for xcol
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
+        # Store results for xcol
         for ind in logisticData1.index:
             ax = sns.regplot(x=ind, y=ycol, data=data, logistic=True)
             plt.savefig('pictures/{}.png'.format(ind))
@@ -552,7 +577,7 @@ class DocumentplanningandDashboard:
 
         # Add to dashbord Model Statistics
         question = logisticQuestion.render(indeNum=np.size(Xcol), xcol=Xcol, ycol=ycol, qs=questionset, section=1)
-        intro = logisticSummary3.render(indeNum=np.size(Xcol), modelName="Logistic Model", Xcol=Xcol,
+        intro = logisticSummary3.render(indeNum=np.size(Xcol), modelName="logistic regression model", Xcol=Xcol,
                                         ycol=ycol)
         aim = Xcol
         aim.insert(0, ycol)
@@ -579,15 +604,22 @@ class DocumentplanningandDashboard:
         for ind in logisticData1.index:
             question = logisticQuestion.render(indeNum=1, xcol=ind, ycol=ycol, qs=questionset, section=2)
             # independent_variable_story
-            text1 = LogA2_1.render(xcol=ind, coeff=logisticData1['coeff'][ind],pos_class_mean=pos_class_mean)
+            # independent_variable_story = logisticSummary.render(xcol=ind, ycol=ycol,
+            #                                                     odd=abs(
+            #                                                         100 * (math.exp(logisticData1['coeff'][ind]) - 1)),
+            #                                                     coeff=logisticData1['coeff'][ind],
+            #                                                     p=logisticData1['pvalue'][ind],
+            #                                                     qs=questionset)
+
+            text1 = LogA2_1.render(xcol=ind, coeff=logisticData1['coeff'][ind], pos_class_mean=pos_class_mean)
             text2 = LogA2_2.render(xcol=ind, odd=abs(
                 100 * (math.exp(logisticData1['coeff'][ind]) - 1)),
-                                   coeff=logisticData1['coeff'][ind],pos_class_mean=pos_class_mean)
+                                   coeff=logisticData1['coeff'][ind], pos_class_mean=pos_class_mean)
             text3 = LogA2_3.render(xcol=ind,
                                    odd=abs(
                                        100 * (math.exp(logisticData1['coeff'][ind]) - 1)),
                                    coeff=logisticData1['coeff'][ind],
-                                   p=logisticData1['pvalue'][ind],pos_class_mean=pos_class_mean
+                                   p=logisticData1['pvalue'][ind], pos_class_mean=pos_class_mean
                                    )
 
             subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
@@ -618,18 +650,28 @@ class DocumentplanningandDashboard:
         plt.clf()
         question = logisticQuestion.render(indeNum=1, xcol=ind, ycol=ycol, qs=questionset, section=3)
         # summary = model.MicroLexicalization(summary)
-        text1 = LogA3_1.render(modelName="logistic regression model",accuracy=accuracy,pos=pos_eff, neg=neg_eff, nss=nss, ss=ss, imp=imp)
-        text2 = LogA3_2.render(modelName="logistic regression model",accuracy=accuracy,auc=auc,pos=pos_eff, neg=neg_eff, nss=nss, ss=ss, imp=imp)
-        text3 = LogA3_3.render(modelName="logistic regression model",accuracy=accuracy,pos=pos_eff,auc=auc,ddd=devDdf, neg=neg_eff, nss=nss, ss=ss, imp=imp,impwithp=impWithP)
+        # summary = LogA3_1.render(modelName="logistic regression model",accuracy=accuracy,pos=pos_eff, neg=neg_eff, nss=nss, ss=ss, imp=imp)
+
+        text1 = LogA3_1.render(modelName="logistic regression model", accuracy=accuracy, pos=pos_eff, neg=neg_eff,
+                               nss=nss, ss=ss, imp=imp)
+        text2 = LogA3_2.render(modelName="logistic regression model", accuracy=accuracy, auc=auc, pos=pos_eff,
+                               neg=neg_eff, nss=nss, ss=ss, imp=imp)
+        text3 = LogA3_3.render(modelName="logistic regression model", accuracy=accuracy, pos=pos_eff, auc=auc,
+                               ddd=devDdf, neg=neg_eff, nss=nss, ss=ss, imp=imp, impwithp=impWithP)
+
         subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
         children = [
             dcc.Graph(figure=fig), html.P(question), html.Br(),
             dcc.Tabs([subtab1, subtab2, subtab3])
         ]
+        # children = [dcc.Graph(figure=fig), html.P(question), html.Br(), html.P(summary)]
         dash_tab_add(listTabs, 'Summary', children)
+
         run_app(logistic_app, listTabs, portnum)
 
-    def GradientBoostingModelStats_view(self, data, Xcol, ycol, GBmodel, mse, mae,r2, imp, lessimp,questionset, gbr_params,train_r2, test_r2,train_mae,test_mae,cv_r2_scores,cv_r2_mean, mape,portnum):
+    def GradientBoostingModelStats_view(self, data, Xcol, ycol, GBmodel, mse, mae, r2, imp, lessimp, questionset,
+                                        gbr_params, train_r2, test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,
+                                        mape, imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test,portnum):
 
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
@@ -670,33 +712,39 @@ class DocumentplanningandDashboard:
 
         GB_app, listTabs = start_app()
         # Add to dashbord Model Statistics
-        question1 = DecisionTreeQuestion.render(q=1, m="gb")
-        text1 = GBRA1_1.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol)
+
+        text1 = GBRA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
-        text2 = GBRA1_2.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape)
-        text3 = GBRA1_3.render(r2=r2, indeNum=np.size(Xcol),Xcol=Xcol,ycol=ycol, mape=mape, mse=mse, rmse=rmse, mae=mae)
+        text2 = GBRA1_2.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape)
+        text3 = GBRA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
+                               mae=mae)
         # micro planning
         # intro = model.MicroLexicalization(intro)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = DecisionTreeQuestion.render(q=1, m="gb")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        # add subtab to the tab
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'Gradient Boosting Stats', children)
         aim.remove(ycol)
 
         text1 = GBRA2_1.render(imp=imp)
-        text2=GBRA2_2.render(imp=imp,lessimp=lessimp)
+        text2 = GBRA2_2.render(imp=imp, lessimp=lessimp)
         feature_importances = GBmodel.feature_importances_
         importance_df = pd.DataFrame({'Feature': Xcol, 'Importance': feature_importances})
         importance_df = importance_df.sort_values(by='Importance', ascending=False).reset_index(drop=True)
         sorted_Xcol = importance_df['Feature'].tolist()
-        text3=GBRA2_3.render(sorted_Xcol=sorted_Xcol)
+        text3 = GBRA2_3.render(sorted_Xcol=sorted_Xcol)
         subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
 
         question3 = DecisionTreeQuestion.render(q=3)
@@ -705,23 +753,37 @@ class DocumentplanningandDashboard:
                     dcc.Tabs([subtab1, subtab2, subtab3])]
         dash_tab_add(listTabs, 'Feature Importances', children)
 
-
         question4 = DecisionTreeQuestion.render(q=4)
-        text1 = CVR2evaluatemodel.render(cv_r2_mean=cv_r2_mean, train_r2=train_r2,diff=abs(train_r2 - cv_r2_mean))
-        text2 = text1 +'\n'+ R2evaluatemodel.render(train_r2=train_r2,test_r2=test_r2,diff=abs(train_r2 - test_r2))
-        text3 = text2 +'\n'+ MAEevaluatemodel.render(train_mae=train_mae,test_mae=test_mae,diff=abs(train_mae - test_mae))
+        text1 = CVR2evaluatemodel.render(cv_r2_mean=cv_r2_mean, train_r2=train_r2, diff=abs(train_r2 - cv_r2_mean))
+        text2 = text1 + '\n' + R2evaluatemodel.render(train_r2=train_r2, test_r2=test_r2, diff=abs(train_r2 - test_r2))
+        text3 = text2 + '\n' + MAEevaluatemodel.render(train_mae=train_mae, test_mae=test_mae,
+                                                       diff=abs(train_mae - test_mae))
 
         subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
 
         children = [html.Img(src='data:image/png;base64,{}'.format(_base64[2])), html.P(question4), html.Br(),
-                    dcc.Tabs([subtab1, subtab2, subtab3]) ]
+                    dcc.Tabs([subtab1, subtab2, subtab3])]
         dash_tab_add(listTabs, 'Model Fitting', children)
+
+
+        plt.figure(figsize=(10, 6))
+        shap.summary_plot(shap_values, X_test, feature_names=Xcol, show=False)
+        plt.savefig('pictures/GB3.png', bbox_inches='tight')
+        plt.close()
+
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("GB3"), 'rb').read()).decode('ascii'))
+
+        question=regressionQuestion.render(section=4)
+        shapStory = pycaretimp.render(imp=imp_var, target=ycol, imp_pos_ave=imp_pos_ave,
+                                   imp_pos_value_ave=imp_pos_value_ave,
+                                   imp_neg_ave=imp_neg_ave, imp_neg_value_ave=imp_neg_value_ave)
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[3])), html.P(question), html.Br(),html.P(shapStory)]
+        dash_tab_add(listTabs, 'SHAP Interpretation', children)
 
         run_app(GB_app, listTabs, portnum)
 
     def RandomForestRegressionModelStats_view(self, data, Xcol, ycol, rf_small, DTData, r2, mse, mae, mape, train_r2,
-                                              test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,
-                                              questionset, portnum=8050):
+                                              test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean,imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var, explainer,shap_values,X_test,portnum=8050):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
 
@@ -755,7 +817,7 @@ class DocumentplanningandDashboard:
         RF_app, listTabs = start_app()
         # Add to dashbord Model Statistics
 
-        question1 = DecisionTreeQuestion.render(q=1, m="rf")
+
 
         text1 = RFA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
@@ -764,18 +826,20 @@ class DocumentplanningandDashboard:
                               mae=mae)
         # micro planning
         # intro = model.MicroLexicalization(intro)
-
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = DecisionTreeQuestion.render(q=1, m="rf")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
         # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
                                          [{"name": i, "id": i} for i in
                                           data[aim].columns],
                                          style_table={'height': '400px',
-                                                      'overflowY': 'auto'})]
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'RandomForestModelStats', children)
 
         aim.remove(ycol)
@@ -807,10 +871,29 @@ class DocumentplanningandDashboard:
                     dcc.Tabs([subtab1, subtab2, subtab3])]
         dash_tab_add(listTabs, 'Model Fitting', children)
 
+        shap.initjs()
+        shap.force_plot(explainer.expected_value, shap_values[0, :], X_test[0, :], feature_names=Xcol)
+
+        # Summary plot for the whole dataset
+
+        plt.figure(figsize=(10, 6))
+        shap.summary_plot(shap_values, X_test, feature_names=Xcol, show=False)
+        plt.savefig('pictures/RF3.png', bbox_inches='tight')
+        plt.close()
+
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("RF3"), 'rb').read()).decode('ascii'))
+
+        question=regressionQuestion.render(section=4)
+        shapStory = pycaretimp.render(imp=imp_var, target=ycol, imp_pos_ave=imp_pos_ave,
+                                   imp_pos_value_ave=imp_pos_value_ave,
+                                   imp_neg_ave=imp_neg_ave, imp_neg_value_ave=imp_neg_value_ave)
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[2])), html.P(question), html.Br(),html.P(shapStory)]
+        dash_tab_add(listTabs, 'SHAP Interpretation', children)
+
         run_app(RF_app, listTabs, portnum)
 
     def DecisionTreeRegressionModelStats_view(self, data, Xcol, ycol, DTData, DTmodel, r2, mse, mae, mape, train_r2,
-                                              test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, questionset,
+                                              test_r2, train_mae, test_mae, cv_r2_scores, cv_r2_mean, imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test,
                                               portnum=8050):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
@@ -844,7 +927,6 @@ class DocumentplanningandDashboard:
         DT_app, listTabs = start_app()
 
         # Add to dashbord Model Statistics
-        question1 = DecisionTreeQuestion.render(q=1, m="dt")
         text1 = DTA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
         text2 = DTA1_2.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape)
@@ -853,13 +935,20 @@ class DocumentplanningandDashboard:
         # micro planning
         # intro = model.MicroLexicalization(intro)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = DecisionTreeQuestion.render(q=1, m="dt")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
+
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'DecisionTreeModelStats', children)
         aim.remove(ycol)
 
@@ -890,6 +979,21 @@ class DocumentplanningandDashboard:
                     dcc.Tabs([subtab1, subtab2, subtab3])]
         dash_tab_add(listTabs, 'Model Fitting', children)
 
+        plt.figure(figsize=(10, 6))
+        shap.summary_plot(shap_values, X_test, feature_names=Xcol, show=False)
+        plt.savefig('pictures/DT3.png', bbox_inches='tight')
+        plt.close()
+
+        _base64.append(base64.b64encode(open('pictures/{}.png'.format("DT3"), 'rb').read()).decode('ascii'))
+
+        question=regressionQuestion.render(section=4)
+        shapStory = pycaretimp.render(imp=imp_var, target=ycol, imp_pos_ave=imp_pos_ave,
+                                   imp_pos_value_ave=imp_pos_value_ave,
+                                   imp_neg_ave=imp_neg_ave, imp_neg_value_ave=imp_neg_value_ave)
+        children = [html.Img(src='data:image/png;base64,{}'.format(_base64[2])), html.P(question), html.Br(),html.P(shapStory)]
+        dash_tab_add(listTabs, 'SHAP Interpretation', children)
+
+
         # Figure of the tree
         fig2, ax = plt.subplots(figsize=(20, 10), dpi=200)
         tree.plot_tree(DTmodel,
@@ -909,6 +1013,7 @@ class DocumentplanningandDashboard:
         children = [html.Img(src='data:image/png;base64,{}'.format(encoded_image)),
                     html.P(question2), html.Br(), html.Pre(tree_explain_story)]
         dash_tab_add(listTabs, 'Tree Explanation', children)
+
 
         run_app(DT_app, listTabs, portnum)
 
@@ -1075,6 +1180,7 @@ class DocumentplanningandDashboard:
         sns.heatmap(confusionmatrix, annot=True, fmt="d", cmap="Blues", cbar=False)
         plt.xlabel("Predicted")
         plt.ylabel("Actual")
+        plt.title('Confusion Matrix')
         plt.savefig('pictures/{}.png'.format("confusionmatrix"))
         _base64.append(base64.b64encode(open('pictures/{}.png'.format("confusionmatrix"), 'rb').read()).decode('ascii'))
         plt.clf()
@@ -1447,10 +1553,11 @@ class DocumentplanningandDashboard:
                     html.P(ImpStory)]
         dash_tab_add(listTabs, "Feature Importances", children)
 
+
         run_app(rfc_app, listTabs)
 
     def RidgeRegressionModel_view(self, data, Xcol, ycol, DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2,
-                                  train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape):
+                                  train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         for ind in DTData.index:
@@ -1465,7 +1572,6 @@ class DocumentplanningandDashboard:
         rr_app, listTabs = start_app()
 
         fig = px.bar(DTData)
-        question1 = regressionQuestion.render(section=1, m="rr")
 
         text1 = RRA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
@@ -1473,14 +1579,20 @@ class DocumentplanningandDashboard:
         text3 = RRA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
                                mae=mae)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = regressionQuestion.render(section=1, m="rr")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'RidgeRegressionModelStats', children)
         aim.remove(ycol)
 
@@ -1492,9 +1604,12 @@ class DocumentplanningandDashboard:
 
             text1 = linearA2_1.render(xcol=ind, ycol=ycol, coeff=DTData['important'][ind])
 
+            text2 = text1+' '+regressionvif.render(xcol=ind, ycol=ycol,
+                                      vif_value=vif[vif['feature'] == ind]['VIF'].values[0])
+            subtab1,subtab2=TwoSubtab(text1,text2)
             children = [
                 html.Img(src='data:image/png;base64,{}'.format(_base64[i])), html.P(question), html.Br(),
-                html.P(text1)
+                dcc.Tabs([subtab1, subtab2])
             ]
             dash_tab_add(listTabs, ind, children)
 
@@ -1512,10 +1627,12 @@ class DocumentplanningandDashboard:
         children = [dcc.Graph(figure=fig), html.P(question), html.Br(), html.P(summary)]
         dash_tab_add(listTabs, 'Summary', children)
 
+
+
         run_app(rr_app, listTabs)
 
     def LassoRegressionModel_view(self, data, Xcol, ycol, DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2,
-                                  train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape):
+                                  train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         for ind in DTData.index:
@@ -1530,7 +1647,6 @@ class DocumentplanningandDashboard:
         rr_app, listTabs = start_app()
 
         fig = px.bar(DTData)
-        question1 = regressionQuestion.render(section=1, m="lr")
 
         text1 = LRA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
@@ -1538,14 +1654,20 @@ class DocumentplanningandDashboard:
         text3 = LRA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
                                mae=mae)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = regressionQuestion.render(section=1, m="lr")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'LassoRegressionModelStats', children)
         aim.remove(ycol)
 
@@ -1557,9 +1679,12 @@ class DocumentplanningandDashboard:
 
             text1 = linearA2_1.render(xcol=ind, ycol=ycol, coeff=DTData['important'][ind])
 
+            text2 = text1+' '+regressionvif.render(xcol=ind, ycol=ycol,
+                                      vif_value=vif[vif['feature'] == ind]['VIF'].values[0])
+            subtab1,subtab2=TwoSubtab(text1,text2)
             children = [
                 html.Img(src='data:image/png;base64,{}'.format(_base64[i])), html.P(question), html.Br(),
-                html.P(text1)
+                dcc.Tabs([subtab1, subtab2])
             ]
             dash_tab_add(listTabs, ind, children)
 
@@ -1580,7 +1705,7 @@ class DocumentplanningandDashboard:
         run_app(rr_app, listTabs)
 
     def ElasticNetModel_view(self, data, Xcol, ycol, DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2, train_mae,
-                             test_mae, cv_r2_scores, cv_r2_mean, mape):
+                             test_mae, cv_r2_scores, cv_r2_mean, mape,vif):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         for ind in DTData.index:
@@ -1595,7 +1720,6 @@ class DocumentplanningandDashboard:
         rr_app, listTabs = start_app()
 
         fig = px.bar(DTData)
-        question1 = regressionQuestion.render(section=1, m="en")
 
         text1 = ENA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
@@ -1603,14 +1727,20 @@ class DocumentplanningandDashboard:
         text3 = ENA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
                                mae=mae)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = regressionQuestion.render(section=1, m="en")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'ElasticNetModelStats', children)
         aim.remove(ycol)
 
@@ -1622,9 +1752,12 @@ class DocumentplanningandDashboard:
 
             text1 = linearA2_1.render(xcol=ind, ycol=ycol, coeff=DTData['important'][ind])
 
+            text2 = text1+' '+regressionvif.render(xcol=ind, ycol=ycol,
+                                      vif_value=vif[vif['feature'] == ind]['VIF'].values[0])
+            subtab1,subtab2=TwoSubtab(text1,text2)
             children = [
                 html.Img(src='data:image/png;base64,{}'.format(_base64[i])), html.P(question), html.Br(),
-                html.P(text1)
+                dcc.Tabs([subtab1, subtab2])
             ]
             dash_tab_add(listTabs, ind, children)
 
@@ -1645,7 +1778,7 @@ class DocumentplanningandDashboard:
         run_app(rr_app, listTabs)
 
     def LeastAngleRegressionModel_view(self, data, Xcol, ycol, DTData, mse, mae, r2, imp, lessimp, train_r2, test_r2,
-                                       train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape):
+                                       train_mae, test_mae, cv_r2_scores, cv_r2_mean, mape,vif):
         if not os.path.exists('pictures'):
             os.makedirs('pictures')
         for ind in DTData.index:
@@ -1660,7 +1793,6 @@ class DocumentplanningandDashboard:
         rr_app, listTabs = start_app()
 
         fig = px.bar(DTData)
-        question1 = regressionQuestion.render(section=1, m="lar")
 
         text1 = LARA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
@@ -1668,14 +1800,20 @@ class DocumentplanningandDashboard:
         text3 = LARA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
                                mae=mae)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = regressionQuestion.render(section=1, m="lar")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'LeastAngleRegressionModelStats', children)
         aim.remove(ycol)
 
@@ -1687,9 +1825,12 @@ class DocumentplanningandDashboard:
 
             text1 = linearA2_1.render(xcol=ind, ycol=ycol, coeff=DTData['important'][ind])
 
+            text2 = text1+' '+regressionvif.render(xcol=ind, ycol=ycol,
+                                      vif_value=vif[vif['feature'] == ind]['VIF'].values[0])
+            subtab1,subtab2=TwoSubtab(text1,text2)
             children = [
                 html.Img(src='data:image/png;base64,{}'.format(_base64[i])), html.P(question), html.Br(),
-                html.P(text1)
+                dcc.Tabs([subtab1, subtab2])
             ]
             dash_tab_add(listTabs, ind, children)
 
@@ -1717,7 +1858,6 @@ class DocumentplanningandDashboard:
         rr_app, listTabs = start_app()
 
         fig = px.bar(DTData)
-        question1 = regressionQuestion.render(section=1, m="lar")
 
         text1 = ADAA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
@@ -1725,14 +1865,20 @@ class DocumentplanningandDashboard:
         text3 = ADAA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
                                mae=mae)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = regressionQuestion.render(section=1, m="ada")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'AdaBoostRegressionModelStats', children)
         aim.remove(ycol)
 
@@ -1757,27 +1903,30 @@ class DocumentplanningandDashboard:
 
         rr_app, listTabs = start_app()
 
-        question1 = regressionQuestion.render(section=1, m="lar")
-
         text1 = KNRA1_1.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol)
         rmse = mse ** (1 / 2.0)
         text2 = KNRA1_2.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape)
         text3 = KNRA1_3.render(r2=r2, indeNum=np.size(Xcol), Xcol=Xcol, ycol=ycol, mape=mape, mse=mse, rmse=rmse,
                                mae=mae)
 
-        subtab1, subtab2, subtab3 = ThreeSubtab(text1, text2, text3)
+        question1 = regressionQuestion.render(section=1, m="knr")
+        question2 = question1+' '+linearQuestion.render(section=4)
+        question3 = question2+' '+linearQuestion.render(section=5)+' '+linearQuestion.render(section=6)
+        subtab1, subtab2, subtab3 = ThreeSubQA(question1,question2,question3,text1, text2, text3)
 
+        # intro = MicroLexicalization(intro)
         aim = Xcol
         aim.insert(0, ycol)
-        children = [html.P(question1), html.Br(), dcc.Tabs([subtab1, subtab2, subtab3]),
-                    dash_table.DataTable(data[aim].to_dict('records'),
-                                         [{"name": i, "id": i} for i in data[aim].columns],
-                                         style_table={'height': '400px', 'overflowY': 'auto'})]
+        children = [dash_table.DataTable(data[aim].to_dict('records'),
+                                         [{"name": i, "id": i} for i in
+                                          data[aim].columns],
+                                         style_table={'height': '400px',
+                                                      'overflowY': 'auto'}), dcc.Tabs([subtab1, subtab2, subtab3]),
+                    ]
         dash_tab_add(listTabs, 'KNeighborsRegressionModelStats', children)
         aim.remove(ycol)
 
         run_app(rr_app, listTabs)
-
 
     def FindBestRegression_view(self,data,Xcol,ycol,comapre_results,fitstory,modelcomparestory,p_values_df):
         _base64 = []
