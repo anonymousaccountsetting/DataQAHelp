@@ -53,7 +53,7 @@ The figure below illustrates the primary models available in the current framewo
 | M7     | Elastic Net Regression            |
 | M8     | Least angle regression            |
 | M9     | Ada boost regression              |
-| M10    | K neighbors regression            |
+| M10    | K-neighbors regression            |
 | M11    | Piecewise linear regression       |
 | M12    | Logistic regression               |
 | M13    | Ridge classifier                  |
