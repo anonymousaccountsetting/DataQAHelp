@@ -28,6 +28,69 @@ Here are some examples of simple applications based on DataQAHelper in action.
   alt="DataQAHelper Application Demo 3"
   style="width:1920px" />
 
+The functionality of the framework is far more than the examples above. The content below provides a more comprehensive view of the main machine learning models currently available and the questions that can be answered.
+
+## Available Models and Questions
+
+The figure below illustrates the primary models available in the current framework along with some of the questions they can answer. While the framework supports a wider range of models and questions, the following table highlights only some of the main ones. The details of the figure are as follows: 
+
+### Table 1: Available Models
+
+| **ID** | **Model**                         |
+|--------|-----------------------------------|
+| M1     | Linear regression                 |
+| M2     | Random forest regression          |
+| M3     | Decision tree regression          |
+| M4     | Gradient boosting                 |
+| M5     | Ridge regression                  |
+| M6     | Lasso regression                  |
+| M7     | Elastic Net Regression            |
+| M8     | Least angle regression            |
+| M9     | Ada boost regression              |
+| M10    | K neighbors regression            |
+| M11    | Piecewise linear regression       |
+| M12    | Logistic regression               |
+| M13    | Ridge classifier                  |
+| M14    | K-neighbours classifier           |
+| M15    | Support vector machines           |
+| M16    | Decision tree classifier          |
+| M17    | Random forest classifier          |
+| M18    | Model comparison                  |
+
+### Table 2: Available Questions
+
+| **ID** | **Question**                                                                                       |
+|--------|----------------------------------------------------------------------------------------------------|
+| Q1     | Is there a strong relationship between X and y? (R2)                                               |
+| Q2     | How well does the model's prediction compare to actual values in percentage terms? (MAPE)          |
+| Q3     | What is the average squared deviation between the predicted and actual values, and how does it indicate prediction accuracy? (MSE\&RMSE) |
+| Q4     | What is the average absolute deviation between the predicted and actual values, and how accurately does it measure prediction performance? (MAE) |
+| Q5     | What is the contribution of each feature to the model's predictions, and how do they impact the prediction for individual samples? (SHAP) |
+| Q6     | How does the model balance goodness-of-fit with complexity, and which model should be preferred based on the trade-off between model fit and simplicity? (AIC\&BIC) |
+| Q7     | Where are the breakpoints located?                                                                 |
+| Q8     | How does an increase in X affect y?                                                                |
+| Q9     | Which X has a significant effect on y?                                                             |
+| Q10    | How independent are the predictor variables, and is multicollinearity present in the regression model? (VIF) |
+| Q11    | Which X is most important to y?                                                                    |
+| Q12    | Is the model at risk of overfitting or underfitting?                                               |
+| Q13    | How to interpret the dendrogram in the model?                                                      |
+| Q14    | How accurate is the classifier?                                                                    |
+| Q15    | What proportion of positive identifications was actually correct? (Precision)                      |
+| Q16    | What proportion of actual positives was correctly identified by the classifier? (Recall)           |
+| Q17    | How does the model balance precision and recall, providing a single score for overall classification performance? (F1) |
+| Q18    | How well does the model fit the data, considering the complexity of the model relative to the number of observations? (deviance divided by the degree of freedom) |
+| Q19    | How much does a one-unit increase in X increase the probability of y?                              |
+| Q20    | How to interpret the confusion matrix of the model?                                                |
+| Q21    | How to interpret the decision boundary in the model?                                               |
+| Q22    | How does the ROC curve of the model explain the classifier's performance? (ROC)                    |
+| Q23    | What effect will each X have on each classification outcome?                                       |
+| Q24    | Which regression is best for this dataset? And why?                                                |
+| Q25    | Which classifier is best for this dataset? And why?                                                |
+
+<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/available.PNG"
+  alt="Available Models and Questions"
+  style="width:1920px" />
+
 ## System Requirements 
 
 * Python version  - '3.10'
