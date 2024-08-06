@@ -14,18 +14,21 @@ Another significant advantage of the framework is its support for reporting and 
 Here are some examples of simple applications based on DataQAHelper in action.
 
 1. Check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelComparisonInterpretation.ipynb) for examples of how applications based on DataQAHelper recommend the most suitable machine learning model for a dataset.
+
 ### Figure 1: DataQAHelper Application Demo 1
 <img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo2.gif?raw=true"
   alt="DataQAHelper Application Demo 1"
   style="width:1920px" />
 
 2. And check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb) for examples of how applications based on DataQAHelper automatically interpret analysis results of different datasets.
+
 ### Figure 2: DataQAHelper Application Demo 2
 <img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo.gif?raw=true"
   alt="DataQAHelper Application Demo 2"
   style="width:1920px" />
 
 3. Finally, check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_aSpecialApplicationCaseStudy.ipynb) for an example showcasing a real case study involving the cyclical reporting project of Aberdeen's child protection services. This example demonstrates how the specialized application based on DataQAHelper, after completing the iterative refinement process, can automatically generate a substantial amount of content and corresponding tables for the report, significantly reducing the workload for the report writers.
+
 ### Figure 3: DataQAHelper Application Demo 3
 <img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo3.gif?raw=true"
   alt="DataQAHelper Application Demo 3"
