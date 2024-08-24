@@ -27,7 +27,7 @@ Here are some examples of simple applications based on DataQAHelper in action.
   alt="DataQAHelper Application Demo 2"
   style="width:1920px" />
 
-3. Finally, check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_aSpecialApplicationCaseStudy.ipynb) for an example showcasing a real case study involving the cyclical reporting project of Aberdeen's child protection services. This example demonstrates how the specialized application based on DataQAHelper, after completing the iterative refinement process, can automatically generate a substantial amount of content and corresponding tables for the report, significantly reducing the workload for the report writers.
+3. Finally, check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_aSpecialApplicationCaseStudy.ipynb) for an example showcasing a case study involving the cyclical reporting project of Drug-related deaths in Scotland services. This example demonstrates how the specialized application based on DataQAHelper, after completing the iterative refinement process, can automatically generate content for formal reports, significantly reducing the workload for the report writers.
 
 ### Figure 3: DataQAHelper Application Demo 3
 <img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo3.gif?raw=true"
