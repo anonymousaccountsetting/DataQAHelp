@@ -2307,3 +2307,54 @@ class special_view_for_ACCCP:
         children = [html.Pre(rendered_str) ]
         dash_tab_add(listTabs, "report template", children)
         return (app_name, listTabs)
+
+
+
+def dependentcompare_view(Xcolname, begin, end, ycolname1, ycolname2, magnification1, magnification2, X, X1, X2):
+
+    return(dc1.render(Xcol=Xcolname, begin=begin, end=end, loopnum=end, y1name=ycolname1, y2name=ycolname2,
+                     magnification1=magnification1,
+                     magnification2=magnification2, X=X, X1=X1, X2=X2))
+
+
+def batchprovessing_view1(m, Xcolname, X1, X2, y, allincrease, alldecrease, category_name, ycolnames, begin, end):
+    story = (bp1.render(mode=m, Xcol=Xcolname, X1=X1, allincrease=allincrease, alldecrease=alldecrease,
+                        category_name=category_name)) + "\n"
+    for i in range(np.size(ycolnames) - 1):
+        ycolname = ycolnames[i]
+        ydata = y[ycolname]
+        y1 = ydata[begin]
+        y2 = ydata[end]
+        story = story + '\n'+bp2.render(mode=m, ycol=ycolname, y1=y1, y2=y2, X1=X1, X2=X2, mag=0)
+    return (story)
+
+
+def batchprovessing_view2(m, Xcolname, X1, allincrease, alldecrease, category_name, total, ycolnames, y, point):
+    story = (bp1.render(mode=m, Xcol=Xcolname, X1=X1, allincrease=False, alldecrease=False,
+                        category_name=category_name)) + "\n"
+    for i in range(np.size(ycolnames) - 1):
+        ycolname = ycolnames[i]
+        ydata = y[ycolname]
+        y1 = ydata[point]
+        mag = np.round(y1 / total, 2)
+        story = story + bp2.render(mode=m, ycol=ycolname, y1=y1, y2=0, X1=0, X2=0, mag=mag)
+    print(story)
+
+def independenttwopointcompare_view(Xcolname, point, ycolname1, ycolname2, X, y1, y2, mode, mag):
+    return (idtpc.render(Xcol=Xcolname, point=point, y1name=ycolname1, y2name=ycolname2, X=X, y1=y1, y2=y2,
+                       mode=mode, mag=mag))
+
+
+def toptwo_view(top_two_age_groups):
+    template = Template(
+        "In 2020, {{ age1_percentage }}% of all drug-related deaths were of people aged {{ age1 }}, "
+        "and followed by {{ age2_percentage }}% between {{ age2 }}."
+    )
+
+    result = template.render(
+        age1_percentage=round(top_two_age_groups[0][1], 2),
+        age1=top_two_age_groups[0][0].replace('Deaths ', ''),
+        age2_percentage=round(top_two_age_groups[1][1], 2),
+        age2=top_two_age_groups[1][0].replace('Deaths ', '')
+    )
+    return (result)

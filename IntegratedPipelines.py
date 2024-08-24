@@ -203,10 +203,91 @@ class casestudy_datastory_pipeline:
     def DRDpiecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
-        my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks,segment_r2_values,mse,mae,bic,aic = DC.ModelFitting().piecewise_linear_fit(
+        my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks, segment_r2_values, mse, mae, bic, aic = DC.ModelFitting().piecewise_linear_fit(
             data, Xcol, ycol, num_breaks)
-        summary=NC.DocumentplanningNoDashboard().DRD_piecewise_linear(data, Xcol, ycol,my_pwlf, slopes, segment_points, segment_values, max_slope_segment,breaks)
+        summary = NC.DocumentplanningNoDashboard().DRD_piecewise_linear(data, Xcol, ycol, my_pwlf, slopes,
+                                                                        segment_points, segment_values,
+                                                                        max_slope_segment, breaks)
         print(summary)
+        return summary
+
+    def DRDdependentcompare_con(self, model,X, y1, y2, Xcolname, ycolname1, ycolname2, begin, end):
+        Xcolname, begin, end, ycolname1, ycolname2, magnification1, magnification2, X, X1, X2 = DC.NonFittingReport.dependentcompare(
+            model, X, y1, y2, Xcolname, ycolname1, ycolname2, begin, end)
+        story=NC.dependentcompare_view(Xcolname, begin, end, ycolname1, ycolname2, magnification1, magnification2, X, X1, X2)
+        return story
+
+    def DRDindependenttwopointcompare_con(self,m, X, Xcolname, y1, y2, ycolname1, ycolname2, point, mode):
+        Xcolname, point, ycolname1, ycolname2, X, y1, y2, mode, mag = DC.NonFittingReport.independenttwopointcompare(m,
+                                                                                                                     X,
+                                                                                                                     Xcolname,
+                                                                                                                     y1,
+                                                                                                                     y2,
+                                                                                                                     ycolname1,
+                                                                                                                     ycolname2,
+                                                                                                                     point,
+                                                                                                                     mode)
+        story=NC.independenttwopointcompare_view(Xcolname, point, ycolname1, ycolname2, X, y1, y2, mode, mag)
+        return story
+
+    def DRDdeathage(self,data,year,Xcol,age_groups,ycol):
+        m=0
+        top_two_age_groups=DC.NonFittingReport.findtwomax(m,data,year,Xcol,age_groups,ycol)
+        story=NC.toptwo_view(top_two_age_groups)
+        return story
+    def DRDbatchprovessing_con(self,m, X, y, Xcolname, ycolnames, category_name, end, begin=0):
+        if m == 1:
+            m, Xcolname, X1, X2, y, allincrease, alldecrease, category_name, ycolnames, begin, end = DC.NonFittingReport.batchprovessing(
+                m, X, y, Xcolname, ycolnames, category_name, end, begin)
+            story=NC.batchprovessing_view1(m, Xcolname, X1, X2, y, allincrease, alldecrease, category_name, ycolnames, begin,
+                                     end)
+            return story
+        elif m == 2:
+            m, Xcolname, X1, allincrease, alldecrease, category_name, total, ycolnames, y, point = DC.NonFittingReport.batchprovessing(
+                m, X, y, Xcolname, ycolnames, category_name, end, begin)
+            NC.batchprovessing_view2(m, Xcolname, X1, allincrease, alldecrease, category_name, total, ycolnames, y,
+                                     point)
+
+    def DRD_mainquestions(self,data1, data2,data3,data4,Xcol, ycol, num_breaks,choose_year,age_groups,y1name,y2name,Xcolname,ycolname1,ycolname2,ycolname3,category_name,ycolnames,template_path,
+                        output_path='./DRDoutput.docx'):
+
+        story1=casestudy_datastory_pipeline.DRDpiecewiselinearFit(self,data1, Xcol, ycol, num_breaks)
+
+        X = data2[Xcol]
+        y = data2[ycol]
+        y1 = data2[y1name]
+        y2 = data2[y2name]
+        model = "magnificationcompare"
+        story2=casestudy_datastory_pipeline.DRDdependentcompare_con(self,model, X, y1, y2, Xcol, y1name, y2name, begin=4, end=24)
+        story3=casestudy_datastory_pipeline.DRDdeathage(self,data2,choose_year,Xcol,age_groups,ycol)
+
+        X = data3[Xcolname]  # Features
+        y1 = data3[ycolname1]
+        y2 = data3[ycolname2]
+        m = "independenttwopointcomparison"
+        story4=casestudy_datastory_pipeline.DRDindependenttwopointcompare_con(self,m, X, Xcolname, y1, y2, ycolname1, ycolname2, point="", mode="mag")
+
+        y1 = data3[ycolname3]
+        story5 = casestudy_datastory_pipeline.DRDindependenttwopointcompare_con(self, m, X, Xcolname, y1, y2, ycolname3,
+                                                                                ycolname2, point="", mode="mag")
+
+        import numpy
+        X = data4[Xcolname]
+        end = numpy.size(X) - 1
+        y = data4[ycolnames]
+        model = 1
+        story6=casestudy_datastory_pipeline.DRDbatchprovessing_con(self,model, X, y, Xcolname, ycolnames, category_name, end, begin=0)
+
+        replacements = {
+            "{{Q1}}": story1,
+            "{{Q2}}": story2,
+            "{{Q3}}": story3,
+            "{{Q4}}": story4,
+            "{{Q5}}": story5,
+            "{{Q6}}": story6,
+
+        }
+        NC.fill_template(template_path, output_path, replacements, RGBColor(255, 0, 0))
 
 class find_best_mode_pipeline:
 

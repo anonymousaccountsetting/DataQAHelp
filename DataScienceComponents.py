@@ -1153,3 +1153,188 @@ class FindBestModel:
         elif "Lars" in modeldetail:
             pycaretname = "lar"
         return (pycaretname)
+
+
+class NonFittingReport:
+    # Include several simple data comparison methods
+    def dependentcompare(m, X, y1, y2, Xcolname, ycolname1, ycolname2, begin, end):
+        if "magnificationcompare" in str(m):
+            if begin == "":
+                begin = 0
+            if end == "":
+                end = np.size(X) - 1
+            magnification1 = math.floor(y1[begin] / y2[begin])
+            magnification2 = round(y1[end] / y2[end], 1)
+            X1 = X[begin]
+            X2 = X[end]
+            return (Xcolname, begin, end, ycolname1, ycolname2, magnification1, magnification2, X, X1, X2)
+            # print(dc1.render(Xcol=Xcolname, begin=begin, end=end, loopnum=end, y1name=ycolname1, y2name=ycolname2,
+            #                  magnification1=magnification1,
+            #                  magnification2=magnification2, X=X, X1=X1, X2=X2))
+        if "quantitycomparison" in str(m):
+            if begin == "":
+                begin = 0
+            if end == "":
+                end = np.size(X) - 1
+            diff1 = round(y1[begin] - y2[begin], 2)
+            diff2 = round(y1[end] - y2[end], 2)
+            X1 = X[begin]
+            X2 = X[end]
+            return (Xcolname, begin, end, ycolname1, ycolname2, diff1, diff2, X, X1, X2)
+            # print(dc3.render(Xcol=Xcolname, begin=begin, end=end, loopnum=end, y1name=ycolname1, y2name=ycolname2,
+            #                  diff1=diff1, diff2=diff2, X=X, X1=X1, X2=X2))
+
+    def independenttwopointcompare(m, X, Xcolname, y1, y2, ycolname1, ycolname2, point, mode):
+        if "independenttwopointcomparison" in str(m):
+            if mode == "":
+                mode = "quantity"
+            if point == "":
+                point = np.size(X) - 1
+            y1 = y1[point]
+            y2 = y2[point]
+            mag = np.round(y1 / y2, 2)
+            return (Xcolname, point, ycolname1, ycolname2, X, y1, y2, mode, mag)
+            # print(idtpc.render(Xcol=Xcolname, point=point, y1name=ycolname1, y2name=ycolname2, X=X, y1=y1, y2=y2,
+            #                    mode=mode, mag=mag))
+
+    def samedependentcompare(m, X, y, Xcolname, ycolname, begin, end):
+        if "samedependentmagnificationcompare" in str(m):
+            if begin == "":
+                begin = 0
+            if end == "":
+                end = np.size(X) - 1
+            magnification = round(y[end] / y[begin], 2)
+            return (Xcolname, ycolname, begin, end, magnification, X, y)
+            # print(dc2.render(Xcol=Xcolname, ycol=ycolname, begin=begin, end=end, magnification=magnification, X=X, y=y))
+        elif "trenddescription" in str(m):
+            Xmaxp = ""
+            Xminp = ""
+            story = ""
+            maxpoint = argrelextrema(y.values, np.greater, order=1)[0]
+            minpoint = argrelextrema(y.values, np.less, order=1)[0]
+            for i in range(np.size(maxpoint)):
+                if float(y[maxpoint[i]]) == max(y):
+                    Xmaxp = X[maxpoint[i]]
+            for i in range(np.size(minpoint)):
+                if float(y[minpoint[i]]) == min(y):
+                    Xminp = X[minpoint[i]]
+            maxy = max(y)
+            miny = min(y)
+            # return (Xcolname, ycolname, X, Xmaxp, Xminp, y, begin, end, maxy, miny)
+            # print(dct.render(Xcol=Xcolname, ycol=ycolname, X=X, Xmaxp=Xmaxp, Xminp=Xminp, y=y, begin=begin, end=end,
+            #                  maxy=max(y), miny=min(y)))
+            repeatvalue = list(unique_everseen(duplicates(y)))
+            if repeatvalue != []:
+                for i in range(np.size(repeatvalue)):
+                    Xsamep = ""
+                    for j in range(np.size(y) - 1):
+                        if y[j] == repeatvalue[i] and y[j + 1] == repeatvalue[i]:
+                            Xsamep = Xsamep + str(X[j]) + " "
+                        elif y[j] == repeatvalue[i] and y[j - 1] == repeatvalue[i]:
+                            Xsamep = Xsamep + str(X[j]) + " "
+                        if j == np.size(y) - 2 and y[j] == repeatvalue[i] and y[j + 1] == repeatvalue[i]:
+                            Xsamep = Xsamep + str(X[j + 1]) + " "
+                    story = story + "In " + Xcolname + " " + Xsamep.split()[0] + " to " + Xsamep.split()[
+                        np.size(Xsamep.split()) - 1] + " " + ycolname + " does not change much, it is around " + str(
+                        repeatvalue[i]) + ". "
+            return (Xcolname, ycolname, X, Xmaxp, Xminp, y, begin, end, maxy, miny, story)
+            # print("In " + Xcolname + " " + Xsamep.split()[0] + " to " + Xsamep.split()[
+            #     np.size(Xsamep.split()) - 1] + " " + ycolname + " does not change much, it is around " + str(
+            #     repeatvalue[i]) + ".")
+        elif "trendpercentage" in str(m):
+            if begin == "":
+                begin = 0
+            if end == "":
+                end = np.size(X) - 1
+            ynew = [0] * (end - begin + 1)
+            for i in range(end - begin + 1):
+                ynew[i] = y[i + begin]
+            std = np.std(ynew)
+            samepoint = end - 1
+            for i in range(end - begin + 1):
+                if y[samepoint] == y[end]:
+                    samepoint = samepoint - 1
+            return (Xcolname, begin, end, ycolname, X, y, std, samepoint + 1)
+            # print(dc4.render(Xcol=Xcolname, begin=begin, end=end, ycol=ycolname, X=X, y=y, std=std))
+
+    def independentcompare(m, X, y, Xcolname, ycolname, begin, end):
+        if "independentquantitycomparison" in str(m):
+            X1 = X[begin]
+            X2 = X[end]
+            y1 = y[begin]
+            y2 = y[end]
+            return (Xcolname, ycolname, X, X1, X2, y1, y2)
+            # print(idc1.render(Xcol=Xcolname, ycol=ycolname, X=X, X1=X1, X2=X2, y1=y1, y2=y2))
+
+    def two_point_and_peak(m, X, y, Xcolname, ycolname, point1, point2):
+        if "twopointpeak_child" in str(m):
+            X1 = X[point1]
+            X2 = X[point2]
+            y1 = y[point1]
+            y2 = y[point2]
+            ypeak = max(y)
+            for i in range(np.size(y)):
+                if y[i] == ypeak:
+                    Xpeak = X[i]
+            return (Xcolname, ycolname, Xpeak, ypeak, X1, X2, y1, y2)
+            # print(tppc.render(Xcol=Xcolname, ycol=ycolname, Xpeak=Xpeak, ypeak=ypeak, X1=X1, X2=X2, y1=y1, y2=y2))
+
+    def findtwomax(m,data,year,Xcol,age_groups,ycol):
+        data_year = data[data[Xcol] == year].iloc[0]
+
+        total_deaths = data_year[ycol]
+        age_group_percentages = {group: (data_year[group] / total_deaths) * 100 for group in age_groups}
+
+        sorted_age_groups = sorted(age_group_percentages.items(), key=lambda x: x[1], reverse=True)
+        top_two_age_groups = sorted_age_groups[:2]
+
+        return top_two_age_groups
+
+
+    def batchprovessing(m, X, y, Xcolname, ycolnames, category_name, end, begin=0):
+        if m == 1:
+            allincrease = True
+            alldecrease = True
+            X1 = X[begin]
+            X2 = X[end]
+            for i in range(np.size(ycolnames) - 1):
+                ycolname = ycolnames[i]
+                ydata = y[ycolname]
+                if ydata[end] > ydata[begin]:
+                    alldecrease = False
+                elif ydata[end] < ydata[begin]:
+                    allincrease = False
+
+            # return (m,Xcolname,X1,allincrease,alldecrease,category_name)
+            # print(bp1.render(mode=m, Xcol=Xcolname, X1=0, allincrease=allincrease, alldecrease=alldecrease,
+            #                  category_name=category_name))
+            return (m, Xcolname, X1, X2, y, allincrease, alldecrease, category_name, ycolnames, begin, end)
+            # story=""
+            # for i in range(np.size(ycolnames) - 1):
+            #     ycolname = ycolnames[i]
+            #     ydata = y[ycolname]
+            #     y1 = ydata[begin]
+            #     y2 = ydata[end]
+            #     story=story+bp2.render(mode=m, ycol=ycolname, y1=y1, y2=y2, X1=X1, X2=X2, mag=0)
+            #   # print(bp2.render(mode=m, ycol=ycolname, y1=y1, y2=y2, X1=X1, X2=X2, mag=0))
+            # return (m, Xcolname, X1, allincrease, alldecrease, category_name, story)
+        elif m == 2:
+            point = end
+            X1 = X[point]
+            allincrease = False
+            alldecrease = False
+            # return (m,Xcolname,X1,allincrease,alldecrease,category_name)
+            # print(bp1.render(mode=m, Xcol=Xcolname, X1=X1, allincrease=False, alldecrease=False,
+            #                  category_name=category_name))
+            total = y[category_name][point]
+            return (m, Xcolname, X1, allincrease, alldecrease, category_name, total, ycolnames, y, point)
+            # story=""
+            # for i in range(np.size(ycolnames) - 1):
+            #     ycolname = ycolnames[i]
+            #     ydata = y[ycolname]
+            #     y1 = ydata[point]
+            #     mag = np.round(y1 / total, 2)
+            #     story=story+bp2.render(mode=m, ycol=ycolname, y1=y1, y2=0, X1=0, X2=0, mag=mag)
+            #     # print(bp2.render(mode=m, ycol=ycolname, y1=y1, y2=0, X1=0, X2=0, mag=mag))
+            # return (m, Xcolname, X1, allincrease, alldecrease, category_name,story)
+
