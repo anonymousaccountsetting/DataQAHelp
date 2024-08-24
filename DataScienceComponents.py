@@ -31,6 +31,10 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import shap
 from itertools import islice
+import math
+from iteration_utilities import duplicates, unique_everseen
+from scipy.signal import argrelextrema
+
 
 
 def evaluate_model(model, X_train, X_test, y_train, y_test):
