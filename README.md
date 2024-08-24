@@ -128,4 +128,5 @@ pycaret==3.0.0
 joblib==1.2.0
 opencv-python==4.7.0.72
 python-docx==0.8.11
+shap==0.41.0
 ```
