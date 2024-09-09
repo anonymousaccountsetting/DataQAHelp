@@ -75,14 +75,14 @@ class general_datastory_pipeline:
                                                                                 train_mae, test_mae, cv_r2_scores,
                                                                                 cv_r2_mean, imp_pos_ave, imp_pos_value_ave, imp_neg_ave, imp_neg_value_ave,imp_var,explainer,shap_values,X_test, portnum)
 
-    def piecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname="", portnum=8050):
+    def piecewiselinearFit(self, data, Xcol, ycol, num_breaks, Xnewname="", ynewname="", mode=1,portnum=8050):
         if Xnewname != "" or ynewname != "":
             data, Xcol, ycol = NC.Microplanning().variablenamechange(data, Xcol, ycol, Xnewname, ynewname)
         my_pwlf, slopes, segment_points, segment_values, max_slope_segment, breaks, segment_r2_values, mse, mae, bic, aic = DC.ModelFitting().piecewise_linear_fit(
             data, Xcol, ycol, num_breaks)
         NC.DocumentplanningandDashboard().piecewise_linear_view(data, Xcol, ycol, my_pwlf, slopes, segment_points,
                                                                 segment_values, max_slope_segment, breaks,
-                                                                segment_r2_values, mse, mae, bic, aic, portnum)
+                                                                segment_r2_values, mse, mae, bic, aic, portnum,mode)
 
     def RidgeClassifierFit(self, data, Xcol, ycol, class1, class2, Xnewname="", ynewname=""):
         if Xnewname != "" or ynewname != "":

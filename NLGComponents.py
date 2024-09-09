@@ -1018,7 +1018,7 @@ class DocumentplanningandDashboard:
         run_app(DT_app, listTabs, portnum)
 
     def piecewise_linear_view(self, data, Xcol, ycol, model, slopes, segment_points, segment_values, max_slope_info,
-                              breaks, segment_r2_values, mse, mae, bic, aic, portnum):
+                              breaks, segment_r2_values, mse, mae, bic, aic, portnum,mode):
 
         x_hat = np.linspace(data[Xcol].min(), data[Xcol].max(), 100)
         y_hat = model.predict(x_hat)
@@ -1074,6 +1074,15 @@ class DocumentplanningandDashboard:
             return merged_breaks, output_slopes
 
         merged_breaks, output_slopes = merge_segments(breaks, slopes)
+
+        if Xcol in ['years', 'year', 'Year', 'Years', 'day', 'Day', 'month', 'Month']:
+            if mode==1:
+                merged_breaks=list(map(int, merged_breaks))
+                max_slope_info['start_end_points']=int(max_slope_info['start_end_points'][0]),int(max_slope_info['start_end_points'][1])
+            elif mode==2:
+                merged_breaks = list(map(math.ceil, merged_breaks))
+                max_slope_info['start_end_points'] = math.ceil(max_slope_info['start_end_points'][0]), math.ceil(
+                    max_slope_info['start_end_points'][1])
 
         question = piecewiseQuestion.render(xcol=Xcol, ycol=ycol, section=4)
         summary = piecewiseSummary4.render(xcol=Xcol, ycol=ycol, merged_breaks=merged_breaks,

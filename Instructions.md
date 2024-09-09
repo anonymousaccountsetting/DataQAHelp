@@ -104,7 +104,7 @@ NewXcolName=['More readable X 1', 'More readable X 2'...]
 NewycolName='More readable y'
 pipeline.LinearFit(df,Xcol,ycol,NewXcolName,NewycolName)
 ```
-Users can also replace 'LinearFit' with any of the following models to get the corresponding data analysis results, visualization images, and FAQ-like reports on the dashboard:
+Users can also replace 'LinearFit' with other available models to get the corresponding data analysis results, visualization images, and FAQ-like reports on the dashboard. Here is a part of it; for more details, please read the readme.
 
 - LogisticFit
 - GradientBoostingFit
