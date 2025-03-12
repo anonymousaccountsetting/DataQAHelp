@@ -1,7 +1,7 @@
 [//]: # (<p align="center"><a href="#"><img width=60% alt="" src="https://github.com/lux-org/lux-resources/blob/master/readme_img/logo.png?raw=true"></a></p>)
 <h1 align="center">DataQAHelper</h1>
 <h3 align="center">A Framework for Data-to-Text Application Development</h3>
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/cover.jpg"
+<img src="https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/readmepic/cover.jpg"
   alt="DataQAHelper Cover"
   style="width:1920px" />
 
@@ -13,24 +13,24 @@ Another significant advantage of the framework is its support for reporting and 
 
 Here are some examples of simple applications based on DataQAHelper in action.
 
-1. Check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelComparisonInterpretation.ipynb) for examples of how applications based on DataQAHelper recommend the most suitable machine learning model for a dataset.
+1. Check out [this Colab notebook](https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/tutorial/Tutorial_ModelComparisonInterpretation.ipynb) for examples of how applications based on DataQAHelper recommend the most suitable machine learning model for a dataset.
 
 ### Figure 1: DataQAHelper Application Demo 1
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo2.gif?raw=true"
+<img src="https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/readmepic/demo2.gif?raw=true"
   alt="DataQAHelper Application Demo 1"
   style="width:1920px" />
 
-2. And check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb) for examples of how applications based on DataQAHelper automatically interpret analysis results of different datasets.
+2. And check out [this Colab notebook](https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/tutorial/Tutorial_ModelFittingInterpretation.ipynb) for examples of how applications based on DataQAHelper automatically interpret analysis results of different datasets.
 
 ### Figure 2: DataQAHelper Application Demo 2
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo.gif?raw=true"
+<img src="https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/readmepic/demo.gif?raw=true"
   alt="DataQAHelper Application Demo 2"
   style="width:1920px" />
 
-3. Finally, check out [this Colab notebook](https://github.com/tangjikededela/DataQAHelp/blob/main/tutorial/Tutorial_aSpecialApplicationCaseStudy.ipynb) for an example showcasing a case study involving the cyclical reporting project of Drug-related deaths in Scotland services. This example demonstrates how the specialized application based on DataQAHelper, after completing the iterative refinement process, can automatically generate content for formal reports, significantly reducing the workload for the report writers.
+3. Finally, check out [this Colab notebook](https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/tutorial/Tutorial_aSpecialApplicationCaseStudy.ipynb) for an example showcasing a case study involving the cyclical reporting project of Drug-related deaths in Scotland services. This example demonstrates how the specialized application based on DataQAHelper, after completing the iterative refinement process, can automatically generate content for formal reports, significantly reducing the workload for the report writers.
 
 ### Figure 3: DataQAHelper Application Demo 3
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/demo3.gif?raw=true"
+<img src="https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/readmepic/demo3.gif?raw=true"
   alt="DataQAHelper Application Demo 3"
   style="width:1920px" />
 
@@ -94,7 +94,7 @@ The figure below illustrates the primary models available in the current framewo
 | Q25    | Which classifier is best for this dataset? And why?                                                |
 
 ### Figure 4: Available questions and data science components: ‘Q’ indicates a question, ‘M’ indicates a model, and the check mark indicates that the question and its answer template are available for this model.
-<img src="https://github.com/tangjikededela/DataQAHelp/blob/main/readmepic/available.PNG"
+<img src="https://github.com/anonymousaccountsetting/DataQAHelp/blob/main/readmepic/available.PNG"
   alt="Available Models and Questions"
   style="width:1920px" />
 
