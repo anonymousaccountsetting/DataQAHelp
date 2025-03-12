@@ -1,7 +1,7 @@
 # Overview:
 This document aims to outline several main functions and integrated pipelines that can be directly invoked to quickly build initial applications. These can take datasets as input, perform the corresponding model fitting, and ultimately present the data analysis results to the user in the form of intuitive textual reports.
 
-Note: This tutorial assumes that you have already cloned the package, if you have not done so already, please check out this [page](https://github.com/tangjikededela/DataQAHelp).
+Note: This tutorial assumes that you have already cloned the package, if you have not done so already, please check out this [page](https://github.com/anonymousaccountsetting/DataQAHelp).
 
 # Introduction to ready-to-use pipeline:
 The framework has three core components: the data science components, the NLG components, and the integrated pipelines. Quickly constructing an initial application often only requires a simple call to the integrated pipelines.
