@@ -163,7 +163,6 @@ segmented_B = env.get_template('testPiecewisePwlfB')
 segmented_GD1 = env.get_template('drugreport1')
 segmented_GC1 = env.get_template('childreport1')
 
-# For Aberdeen City CP
 national_data_compare_story = env.get_template('national_data.txt')
 register_story = env.get_template('register.txt')
 risk_factor_story = env.get_template('risk_factor.txt')
